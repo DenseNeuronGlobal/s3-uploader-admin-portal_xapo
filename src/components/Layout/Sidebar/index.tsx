@@ -2,6 +2,8 @@ import React, {useState} from 'react';
 import {styled, Theme} from "@material-ui/core/styles";
 import { Box, ButtonBase, Typography, IconButton } from "@material-ui/core";
 import { NavLink, useHistory} from "react-router-dom";
+import {Auth} from "aws-amplify";
+import {Toast} from "../../../utils/notifications";
 
 const Drawer: any = styled(Box)(({ theme, collapsed }: { theme: Theme, collapsed: boolean }) => ({
   width: collapsed ? '40px' : '256px',
@@ -23,15 +25,23 @@ const MenuItem: any = styled(ButtonBase)(({ theme, activated }: { theme: Theme, 
 }));
 
 const SidebarHeader: any = styled(Box)(({ theme, collapsed }: { theme: Theme, collapsed: boolean }) => ({
-  padding: collapsed ? '0' : '24px',
+  padding: collapsed ? '4px' : '24px',
   borderBottom: '1px solid #eaeded',
   display: 'flex',
-  justifyContent: 'space-between',
+  justifyContent: collapsed ? 'center' : 'space-between',
   alignItems: 'flex-start',
+  width: collapsed ? '32px' : 'auto',
 
   '& .MuiTypography-root': {
     fontSize: '18px',
     fontWeight: 700,
+  },
+
+  '& .MuiButtonBase-root': {
+    padding: '5px',
+    '& img': {
+      width: collapsed ? '16px' : '20px',
+    }
   }
 }));
 
@@ -54,9 +64,30 @@ const NavLinks = [
   }
 ];
 
+const LogoutButton: any = styled(ButtonBase)(({ theme, activated }: { theme: Theme, activated: boolean }) => ({
+  margin: '12px 0',
+  marginTop: 'auto',
+  backgroundColor: 'white',
+  fontSize: '16px',
+  color: activated ? '#ec7211' : '#000',
+  textDecoration: 'none'
+}));
+
 const Sidebar: React.FC = () => {
   const history = useHistory();
   const [collapsed, setCollapsed] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await Auth.signOut();
+      Toast("Success!!", "Logged out successfully!", "success");
+      history.push("/signin");
+    } catch (error: any) {
+      if(error) {
+        Toast("Error!!", error.message, "danger");
+      }
+    }
+  };
 
   return (
     <Drawer collapsed={collapsed}>
@@ -65,7 +96,7 @@ const Sidebar: React.FC = () => {
           !collapsed && (<Typography>Users & S3 Files Management</Typography>)
         }
         <IconButton onClick={() => setCollapsed(!collapsed)}>
-          X
+          <img src={collapsed ? `icons/bars.svg` : `icons/close.svg`} alt="icon" />
         </IconButton>
       </SidebarHeader>
       {

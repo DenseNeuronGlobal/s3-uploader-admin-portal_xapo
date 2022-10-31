@@ -6,6 +6,10 @@ body {
   font-family: "Amazon Ember","Helvetica Neue",Roboto,Arial,sans-serif !important;
 }
 
+h1, h2, h3, h4, h5, p, div {
+  font-family: "Amazon Ember","Helvetica Neue",Roboto,Arial,sans-serif !important;
+}
+
 code {
   font-family: "Amazon Ember","Helvetica Neue",Roboto,Arial,sans-serif;
 }
@@ -53,17 +57,17 @@ iframe {
 @font-face {
   font-family: 'Amazon Ember';
   font-weight: 700;
-  src: url('./assets/fonts/AmazonEmber_Rg.ttf');
+  src: url('./assets/fonts/AmazonEmber_Bd.ttf');
 }
 
 @font-face {
   font-family: 'Amazon Ember';
   font-weight: 800;
-  src: url('./assets/fonts/AmazonEmber_Rg.ttf');
+  src: url('./assets/fonts/AmazonEmber_Bd.ttf');
 }
 
 @font-face {
   font-family: 'Amazon Ember';
   font-weight: 900;
-  src: url('./assets/fonts/AmazonEmber_Rg.ttf');
+  src: url('./assets/fonts/AmazonEmber_Bd.ttf');
 }
