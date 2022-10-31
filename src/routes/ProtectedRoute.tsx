@@ -19,7 +19,10 @@ const ProtectedRoute: React.FC<Props> = ({ component }) => {
         user = await Auth.currentAuthenticatedUser();
         if (user) {
           setLoggedIn(true);
-          setUser(user);
+          setUser({
+            ...user,
+            ...user.attributes
+          });
         } else {
           setLoggedIn(false);
         }
