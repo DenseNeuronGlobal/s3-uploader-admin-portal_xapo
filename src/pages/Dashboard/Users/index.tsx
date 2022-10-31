@@ -12,7 +12,6 @@ const AddButton: any = styled(Button)({
   marginBottom: '10px',
 });
 
-
 const Users = () => {
   const [users, setUsers] = useState();
 
@@ -47,9 +46,8 @@ const Users = () => {
       UserPoolId: COGNITO.USER_POOL_ID,
     };
 
-    AWS.config.update({ region: COGNITO.REGION, accessKeyId: COGNITO.ACCESS_KEY_ID, secretAccessKey: COGNITO.SECRETE_ACCESS_KEY });
-    const cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider();
-    cognitoidentityserviceprovider.listUsers(params, (err, data) => {
+    const cognito = new AWS.CognitoIdentityServiceProvider();
+    cognito.listUsers(params, (err, data) => {
       if (err) {
         console.log(err);
       }

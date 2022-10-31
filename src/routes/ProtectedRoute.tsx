@@ -7,7 +7,6 @@ interface Props {
   component: React.FC;
 }
 
-
 const ProtectedRoute: React.FC<Props> = ({ component }) => {
   const [isAuthenticated, setLoggedIn] = React.useState(true);
   const [user, setUser] = React.useState();

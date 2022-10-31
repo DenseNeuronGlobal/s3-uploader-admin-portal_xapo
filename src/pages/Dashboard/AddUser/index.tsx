@@ -8,6 +8,11 @@ import { useHistory } from "react-router-dom";
 import {Card, Grid} from "@material-ui/core";
 import { Toast } from "../../../utils/notifications";
 import { useInput } from "../../../utils/forms";
+import AWS from "aws-sdk";
+import {COGNITO} from "../../../configs/aws";
+
+AWS.config.update({ region: COGNITO.REGION, accessKeyId: COGNITO.ACCESS_KEY_ID, secretAccessKey: COGNITO.SECRETE_ACCESS_KEY });
+const s3 = new AWS.S3({apiVersion: '2006-03-01'});
 
 const FormPaper: any = styled(Card)({
   padding: "20px",
@@ -16,6 +21,11 @@ const FormPaper: any = styled(Card)({
 const Field: any = styled(TextField)({
   margin: "10px 0",
   width: '100%'
+});
+
+const AddButton: any = styled(Button)({
+  marginLeft: 'auto',
+  marginBottom: '10px',
 });
 
 const AddUser: React.FC = () => {
@@ -43,18 +53,43 @@ const AddUser: React.FC = () => {
       return;
     }
     try {
-      await Auth.signUp({
-        username: email,
-        password: confirmPassword,
-        attributes: {
-          email,
-          name,
-          phone_number: phone,
-          "custom:company": company,
-        },
+      const cognito = new AWS.CognitoIdentityServiceProvider();
+
+      const cognitoParams = {
+        UserPoolId: COGNITO.USER_POOL_ID,
+        Username: email,
+        TemporaryPassword: confirmPassword,
+        UserAttributes: [
+          {
+            Name: 'email',
+            Value: email,
+          },
+          {
+            Name: 'email_verified',
+            Value: 'true',
+          }
+        ],
+      }
+
+      await cognito.adminCreateUser(cognitoParams, (err, data) => {
+        if (err) {
+          console.log(err);
+        } else {
+          const bucketParams = {
+            Bucket: email,
+          };
+
+          s3.createBucket(bucketParams, function(err, data) {
+            if (err) {
+              console.log("Error", err);
+            } else {
+              console.log("Success", data.Location);
+            }
+          });
+          Toast("Success!!", "User created successfully", "success");
+          history.push("/users");
+        }
       });
-      Toast("Success!!", "Signup was successful", "success");
-      history.push("/confirmation");
     } catch (error) {
       console.error(error);
       Toast("Error!!", error.message, "danger");
@@ -64,6 +99,7 @@ const AddUser: React.FC = () => {
 
   return (
     <FormPaper>
+      <AddButton>Add</AddButton>
       <form
         style={{
           display: "flex",
@@ -104,7 +140,7 @@ const AddUser: React.FC = () => {
           disabled={loading}
         >
           {loading && <CircularProgress size={20} style={{ marginRight: 20 }} />}
-          Sign Up
+          Add
         </Button>
       </form>
     </FormPaper>
