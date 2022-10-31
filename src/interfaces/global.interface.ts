@@ -5,3 +5,9 @@ export interface IColumn {
   key: string;
   render?: (row: any) => string | ReactNode
 }
+
+export interface IPath {
+  title: string
+  to?: string
+  onClick?: () => void
+}

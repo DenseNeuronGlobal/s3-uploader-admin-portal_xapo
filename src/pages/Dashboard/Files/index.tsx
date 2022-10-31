@@ -1,7 +1,29 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
+import { Button } from "@material-ui/core";
+import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { COGNITO } from "../../../configs/aws";
 import AWS from "aws-sdk";
 import CommonTable from "../../../components/Table";
+import CommonBreadCrumb from "../../../components/BreadCrumbs";
+import { IColumn, IPath } from "../../../interfaces/global.interface";
+
+const useStyles = makeStyles(() => createStyles({
+    folderName: {
+        cursor: "pointer",
+        color: "#0073bb",
+        fontSize: "14px",
+        lineHeight: "22px",
+        "&:hover": {
+            color: "#0073bb",
+            textDecoration: "underline"
+        }
+    },
+    deleteButton: {
+        color: "#d32f2f",
+        marginLeft: "auto",
+        marginBottom: "10px"
+    },
+}))
 
 interface IFile {
     id: string;
@@ -14,11 +36,22 @@ const Files = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [files, setFiles] = useState<IFile[]>([]);
     const [depth, setDepth] = useState<number>(0);
+    const [paths, setPaths] = useState<IPath[]>([]);
+    const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
-    const columns = [
+    const classes = useStyles();
+
+    const s3 = new AWS.S3();
+
+    const columns: IColumn[] = [
         {
             title: 'Name',
             key: 'Key',
+            render: (row: IFile) => (
+                <span onClick={() => onRowClick(row)} className={classes.folderName}>
+                    {row.Key}
+                </span>
+            )
         },
         {
             title: 'Last modified',
@@ -32,17 +65,17 @@ const Files = () => {
     ];
 
     const fetchFolders = (prefix: string = '', newDepth: number = 0): void => {
+        setSelectedRows([]);
         setLoading(true);
-        setDepth(newDepth)
+        setDepth(newDepth);
+
         const params = {
             Bucket: COGNITO.S3_BUCKET,
             StartAfter: prefix,
             Prefix: prefix
         };
 
-        const s3 = new AWS.S3();
         s3.listObjectsV2(params, (err, data) => {
-            console.log('data', data);
             if (err) {
                 console.log(err);
             } else {
@@ -67,25 +100,79 @@ const Files = () => {
         });
     };
 
+    const deleteObjects = () => {
+        const params = {
+            Bucket: COGNITO.S3_BUCKET,
+            Delete: {
+                Objects: selectedRows.map((rowId) => ({
+                    Key: rowId
+                }))
+            }
+        };
+
+        s3.deleteObjects(params, (err, data) => {
+            if (err) {
+                console.log(err);
+            } else {
+                fetchFolders();
+            }
+            setLoading(false);
+        });
+
+        setSelectedRows([]);
+    };
+
     useEffect(() => {
         fetchFolders()
     }, []);
 
-    const onRowClick = (id: string): void => {
-        fetchFolders(id, depth + 1);
+    const onRowClick = (row: IFile, newDepth: number = depth): void => {
+        fetchFolders(row.id, newDepth + 1);
+        setPaths((prev) => ([
+            ...prev,
+            {
+                title: row.Key,
+                onClick: () => {
+                    setPaths(prev);
+                    onRowClick(row, newDepth);
+                }
+            }
+        ]));
     };
 
     return (
-    <>
-        Files List
-        <CommonTable
-            loading={loading}
-            columns={columns}
-            tableData={files}
-            onRowClick={onRowClick}
-        />
-    </>
-  );
+        <>
+            <CommonBreadCrumb
+                paths={[
+                    {
+                        title: 'File List',
+                        onClick: () => {
+                            setPaths([]);
+                            fetchFolders();
+                        }
+                    },
+                    ...paths
+                ]}
+            />
+            <Button
+                color="inherit"
+                variant="outlined"
+                disabled={selectedRows.length === 0}
+                onClick={deleteObjects}
+                className={classes.deleteButton}
+            >
+                Delete
+            </Button>
+            <CommonTable
+                loading={loading}
+                columns={columns}
+                tableData={files}
+                showCheckBoxSelection
+                selectedRows={selectedRows}
+                setSelectedRows={setSelectedRows}
+            />
+        </>
+    );
 };
 
 export default Files;

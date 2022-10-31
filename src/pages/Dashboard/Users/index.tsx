@@ -7,11 +7,18 @@ import { COGNITO } from "../../../configs/aws";
 import CommonTable from "../../../components/Table";
 import { Toast } from "../../../utils/notifications";
 import { IUserAttributes, IUserSimple } from "../../../interfaces/user.interface";
+import CommonBreadCrumb from "../../../components/BreadCrumbs";
+import { IPath } from "../../../interfaces/global.interface";
 
 const AddButton: any = styled(Button)({
   marginLeft: 'auto',
   marginBottom: '10px',
 });
+
+const defaultPath: IPath = {
+  title: 'User List',
+  to: '/users'
+};
 
 const Users = () => {
   const [users, setUsers] = useState<IUserSimple[]>([]);
@@ -74,6 +81,9 @@ const Users = () => {
 
   return (
     <>
+      <CommonBreadCrumb
+          paths={[defaultPath]}
+      />
       <AddButton color="primary" variant="outlined" onClick={() => history.push('/users/new')}>
         Add User
       </AddButton>
