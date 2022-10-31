@@ -29,8 +29,10 @@ const Signin: React.FC = () => {
       await Auth.signIn(email, password);
       Toast("Success!!", "Login Successfully", "success");
       history.push("/");
-    } catch (error) {
-      Toast("Error!!", error.message, "danger");
+    } catch (error: any) {
+      if (error) {
+        Toast("Error!!", error.message, "danger");
+      }
     }
     setLoading(false);
   };

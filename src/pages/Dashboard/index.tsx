@@ -22,8 +22,10 @@ const Dashboard: React.FC = () => {
       await Auth.signOut();
       Toast("Success!!", "Logged out successfully!", "success");
       history.push("/signin");
-    } catch (error) {
-      Toast("Error!!", error.message, "danger");
+    } catch (error: any) {
+      if(error) {
+        Toast("Error!!", error.message, "danger");
+      }
     }
   };
 

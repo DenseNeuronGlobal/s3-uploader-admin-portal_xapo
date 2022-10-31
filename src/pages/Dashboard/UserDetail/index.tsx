@@ -78,9 +78,10 @@ const UserDetail: React.FC = () => {
           history.push("/users");
         }
       });
-    } catch (error) {
-      console.error(error);
-      Toast("Error!!", error.message, "danger");
+    } catch (error: any) {
+      if (error) {
+        Toast("Error!!", error.message, "danger");
+      }
     }
     setLoading(false);
   };

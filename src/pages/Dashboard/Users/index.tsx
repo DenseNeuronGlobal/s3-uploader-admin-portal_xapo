@@ -12,7 +12,7 @@ const AddButton: any = styled(Button)({
 });
 
 const Users = () => {
-  const [users, setUsers] = useState();
+  const [users, setUsers] = useState([]);
 
   const history = useHistory();
 
@@ -52,6 +52,7 @@ const Users = () => {
       }
       else {
         if (data.Users) {
+          // @ts-ignore
           setUsers(data.Users.map((user) => {
             const attri = user.Attributes && user.Attributes.reduce((attributes: { [key: string]: any }, attribute: AttributeType) => (
               {
