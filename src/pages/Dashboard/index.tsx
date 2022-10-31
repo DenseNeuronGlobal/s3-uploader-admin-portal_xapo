@@ -35,7 +35,7 @@ const Dashboard: React.FC = () => {
         <Route path="/users/new">
           <UserDetail />
         </Route>
-        <Route path="/users/:id">
+        <Route path="/users/:username">
           <UserDetail />
         </Route>
         <Route path="/users">
