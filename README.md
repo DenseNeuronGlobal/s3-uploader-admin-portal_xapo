@@ -34,7 +34,7 @@ This is the purpose of evaluating skills of React and AWS experiences.
         List Files under selected Folder
 ```
 
-## Getting Started
+## Getting Started Without Docker
 
 #### Install dependencies
 
@@ -57,6 +57,14 @@ run `yarn start` in the root directory
 #### Build the app (for production)
 
 run `yarn build` in the root directory
+
+## Getting Started With Docker
+
+### Build the Docker Image
+`docker build -t denseneuron/react-aws .`
+
+### Run the app
+`docker run -d -p 80:80 denseneuron/react-aws`
 
 ## About AWS Cognito
 
