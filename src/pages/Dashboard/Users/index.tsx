@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useHistory} from 'react-router-dom';
 import AWS from 'aws-sdk';
-import {Button, styled} from '@material-ui/core';
+import {Box, Button, styled} from '@material-ui/core';
 import {AttributeType} from 'aws-sdk/clients/cognitoidentityserviceprovider';
 import {COGNITO} from '../../../configs/aws';
 import CommonTable from '../../../components/Table';
@@ -11,6 +11,15 @@ import CommonBreadCrumb from '../../../components/BreadCrumbs';
 import {IPath} from '../../../interfaces/global.interface';
 
 const AddButton: any = styled(Button)({
+  marginLeft: '10px',
+});
+
+const RemoveButton: any = styled(Button)({
+  marginLeft: '10px',
+  color: '#d32f2f',
+});
+
+const ActionWrapper: any = styled(Box)({
   marginLeft: 'auto',
   marginBottom: '10px'
 });
@@ -20,15 +29,42 @@ const defaultPath: IPath = {
   to: '/users'
 };
 
+const UserNameCell: any = styled(Box)({
+  marginLeft: 'auto',
+  marginBottom: '10px',
+  cursor: 'pointer',
+  color: '#0073bb',
+  fontSize: '14px',
+  lineHeight: '22px',
+  '&:hover': {
+    color: '#0073bb',
+    textDecoration: 'underline'
+  }
+});
+
 const Users = () => {
   const [users, setUsers] = useState<IUserSimple[]>([]);
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
   const history = useHistory();
 
   const columns = [
     {
       title: 'Name',
-      key: 'Username'
+      key: 'Username',
+      render: (row: IUserSimple) => (
+        <UserNameCell onClick={() => onRowClick(row.Username)}>
+          {row.Username}
+        </UserNameCell>
+      )
+    },
+    {
+      title: 'Enabled',
+      key: 'Enabled'
+    },
+    {
+      title: 'Account status',
+      key: 'UserStatus',
     },
     {
       title: 'Email',
@@ -39,18 +75,24 @@ const Users = () => {
       key: 'email_verified'
     },
     {
-      title: 'Enabled',
-      key: 'Enabled'
+      title: 'Phone number verified',
+      key: 'email_verified'
     },
     {
-      title: 'Created at',
+      title: 'Updated',
+      key: ' UserLastModifiedDate',
+      render: (row: IUserSimple) => row?.UserLastModifiedDate?.toDateString()
+    },
+    {
+      title: 'Created',
       key: 'UserCreateDate',
       render: (row: IUserSimple) => row?.UserCreateDate?.toDateString()
     }
   ];
 
   useEffect(() => {
-    var params = {
+
+    let params = {
       UserPoolId: COGNITO.USER_POOL_ID
     };
 
@@ -83,13 +125,32 @@ const Users = () => {
     });
   }, []);
 
+  const handleDeleteObjects = () => {
+
+  };
+
+  const onRowClick = (row: string): void => {
+    history.push(`users/${row}`);
+  };
+
   return (
     <>
       <CommonBreadCrumb paths={[defaultPath]} />
-      <AddButton color="primary" variant="outlined" onClick={() => history.push('/users/new')}>
-        Add User
-      </AddButton>
-      <CommonTable columns={columns} tableData={users} onRowClick={row => history.push(`/users/${row.Username}`)} />
+      <ActionWrapper>
+        <RemoveButton color="inherit" variant="outlined" disabled={selectedRows.length === 0} onClick={handleDeleteObjects}>
+          Delete
+        </RemoveButton>
+        <AddButton color="primary" variant="outlined" onClick={() => history.push('/users/new')}>
+          Add User
+        </AddButton>
+      </ActionWrapper>
+      <CommonTable
+        showCheckBoxSelection
+        columns={columns}
+        tableData={users}
+        selectedRows={selectedRows}
+        setSelectedRows={setSelectedRows}
+      />
     </>
   );
 };
