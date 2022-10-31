@@ -1,51 +1,50 @@
-import React, { FC, useState } from 'react';
-import { styled } from "@material-ui/core/styles";
-import {Avatar, Box, Button, Divider, Popover, Typography} from "@material-ui/core";
-import { IUser } from "../../../interfaces/user.interface";
-import { COGNITO } from "../../../configs/aws";
+import React, {FC, useState} from 'react';
+import {styled} from '@material-ui/core/styles';
+import {Avatar, Box, Button, Divider, Popover, Typography} from '@material-ui/core';
+import {IUser} from '../../../interfaces/user.interface';
+import {COGNITO} from '../../../configs/aws';
 
-const AppHeader: any = styled(Box)(({ theme }) => ({
+const AppHeader: any = styled(Box)(({theme}) => ({
   height: '60px',
   padding: '0 24px',
   backgroundColor: '#232f3e',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
+  justifyContent: 'space-between'
 }));
 
-const Logo: any = styled(Box)(({ theme }) => ({
-}));
+const Logo: any = styled(Box)(({theme}) => ({}));
 
-const UserInfo: any = styled(Box)(({ theme }) => ({
+const UserInfo: any = styled(Box)(({theme}) => ({
   display: 'flex',
   alignItems: 'center',
-  color: 'white',
+  color: 'white'
 }));
 
-const UserInfoLabel: any = styled(Typography)(({ theme }) => ({
+const UserInfoLabel: any = styled(Typography)(({theme}) => ({
   color: 'white',
   marginLeft: theme.spacing(1),
-  textTransform: 'capitalize',
+  textTransform: 'capitalize'
 }));
 
-const MenuContent: any = styled(Box)(({ theme }) => ({
+const MenuContent: any = styled(Box)(({theme}) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   background: '#232f3e',
-  color: 'white',
+  color: 'white'
 }));
 
-const InfoWrapper: any = styled(Box)(({ theme }) => ({
+const InfoWrapper: any = styled(Box)(({theme}) => ({
   padding: '12px 20px',
-  color: '#AAB7B8',
+  color: '#AAB7B8'
 }));
 
 interface IHeaderProps {
-  user: IUser
+  user: IUser;
 }
 
-const Header: FC<IHeaderProps> = ({ user }) => {
+const Header: FC<IHeaderProps> = ({user}) => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -71,11 +70,11 @@ const Header: FC<IHeaderProps> = ({ user }) => {
         onClose={handleMenuClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'right',
+          horizontal: 'right'
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'right',
+          horizontal: 'right'
         }}
       >
         <MenuContent>
@@ -91,6 +90,6 @@ const Header: FC<IHeaderProps> = ({ user }) => {
       </Popover>
     </AppHeader>
   );
-}
+};
 
 export default Header;

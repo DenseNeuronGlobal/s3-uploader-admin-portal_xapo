@@ -2,7 +2,7 @@ export interface IUser {
   username: string;
   email: string;
   emailVerified: boolean;
-  enabled: boolean
+  enabled: boolean;
 }
 
 export interface IUserSimple {

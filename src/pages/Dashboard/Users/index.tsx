@@ -1,18 +1,18 @@
 import React, {useEffect, useState} from 'react';
-import { useHistory } from "react-router-dom";
-import AWS from "aws-sdk";
-import { Button, styled } from "@material-ui/core";
-import { AttributeType } from "aws-sdk/clients/cognitoidentityserviceprovider";
-import { COGNITO } from "../../../configs/aws";
-import CommonTable from "../../../components/Table";
-import { Toast } from "../../../utils/notifications";
-import { IUserAttributes, IUserSimple } from "../../../interfaces/user.interface";
-import CommonBreadCrumb from "../../../components/BreadCrumbs";
-import { IPath } from "../../../interfaces/global.interface";
+import {useHistory} from 'react-router-dom';
+import AWS from 'aws-sdk';
+import {Button, styled} from '@material-ui/core';
+import {AttributeType} from 'aws-sdk/clients/cognitoidentityserviceprovider';
+import {COGNITO} from '../../../configs/aws';
+import CommonTable from '../../../components/Table';
+import {Toast} from '../../../utils/notifications';
+import {IUserAttributes, IUserSimple} from '../../../interfaces/user.interface';
+import CommonBreadCrumb from '../../../components/BreadCrumbs';
+import {IPath} from '../../../interfaces/global.interface';
 
 const AddButton: any = styled(Button)({
   marginLeft: 'auto',
-  marginBottom: '10px',
+  marginBottom: '10px'
 });
 
 const defaultPath: IPath = {
@@ -28,70 +28,68 @@ const Users = () => {
   const columns = [
     {
       title: 'Name',
-      key: 'Username',
+      key: 'Username'
     },
     {
       title: 'Email',
-      key: 'email',
+      key: 'email'
     },
     {
       title: 'Email verified',
-      key: 'email_verified',
+      key: 'email_verified'
     },
     {
       title: 'Enabled',
-      key: 'Enabled',
+      key: 'Enabled'
     },
     {
       title: 'Created at',
       key: 'UserCreateDate',
-      render: ((row: IUserSimple) => row?.UserCreateDate?.toDateString()),
+      render: (row: IUserSimple) => row?.UserCreateDate?.toDateString()
     }
   ];
 
   useEffect(() => {
     var params = {
-      UserPoolId: COGNITO.USER_POOL_ID,
+      UserPoolId: COGNITO.USER_POOL_ID
     };
 
     const cognito = new AWS.CognitoIdentityServiceProvider();
     cognito.listUsers(params, (err, data) => {
       if (err) {
-        Toast("Error!!", err.message || 'Error', "danger");
+        Toast('Error!!', err.message || 'Error', 'danger');
         return;
-      }
-      else {
+      } else {
         if (data.Users) {
-          setUsers(data.Users.map((user) => {
-            const attri = user.Attributes && user.Attributes.reduce((attributes: IUserAttributes, attribute: AttributeType) => (
-              {
-                ...attributes,
-                [attribute.Name]: attribute.Value,
-              }
-            ), {});
-            return {
-              ...user,
-              ...attri,
-            } as IUserSimple;
-          }));
+          setUsers(
+            data.Users.map(user => {
+              const attri =
+                user.Attributes &&
+                user.Attributes.reduce(
+                  (attributes: IUserAttributes, attribute: AttributeType) => ({
+                    ...attributes,
+                    [attribute.Name]: attribute.Value
+                  }),
+                  {}
+                );
+              return {
+                ...user,
+                ...attri
+              } as IUserSimple;
+            })
+          );
         }
       }
-    })
+    });
   }, []);
 
   return (
     <>
-      <CommonBreadCrumb
-          paths={[defaultPath]}
-      />
+      <CommonBreadCrumb paths={[defaultPath]} />
       <AddButton color="primary" variant="outlined" onClick={() => history.push('/users/new')}>
         Add User
       </AddButton>
-      <CommonTable
-        columns={columns}
-        tableData={users}
-        onRowClick={(row) => history.push(`/users/${row.Username}`)}
-      />
+      <CommonTable columns={columns} tableData={users} onRowClick={row => history.push(`/users/${row.Username}`)} />
     </>
   );
 };

@@ -3,15 +3,21 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #f1f1f1;
-  font-family: "Amazon Ember","Helvetica Neue",Roboto,Arial,sans-serif !important;
+  font-family: 'Amazon Ember', 'Helvetica Neue', Roboto, Arial, sans-serif !important;
 }
 
-h1, h2, h3, h4, h5, p, div {
-  font-family: "Amazon Ember","Helvetica Neue",Roboto,Arial,sans-serif !important;
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+div {
+  font-family: 'Amazon Ember', 'Helvetica Neue', Roboto, Arial, sans-serif !important;
 }
 
 code {
-  font-family: "Amazon Ember","Helvetica Neue",Roboto,Arial,sans-serif;
+  font-family: 'Amazon Ember', 'Helvetica Neue', Roboto, Arial, sans-serif;
 }
 
 iframe {

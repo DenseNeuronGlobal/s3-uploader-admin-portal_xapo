@@ -1,17 +1,15 @@
-import React from "react";
-import { Redirect, Route, Switch, useHistory } from "react-router-dom";
-import { Box, styled } from "@material-ui/core";
-import { Auth } from "aws-amplify";
-import { Toast } from "../../utils/notifications";
-import Users from "./Users";
-import Files from "./Files";
-import UserDetail from "./UserDetail";
+import React from 'react';
+import {Redirect, Route, Switch} from 'react-router-dom';
+import {Box, styled} from '@material-ui/core';
+import Users from './Users';
+import Files from './Files';
+import UserDetail from './UserDetail';
 
 const Page: any = styled(Box)({
   flex: 1,
   padding: '20px',
   display: 'flex',
-  flexDirection: 'column',
+  flexDirection: 'column'
 });
 
 const Dashboard: React.FC = () => {
@@ -30,10 +28,7 @@ const Dashboard: React.FC = () => {
         <Route path="/files">
           <Files />
         </Route>
-        <Route
-          path="*"
-          render={() => <Redirect to="/users" />}
-        />
+        <Route path="*" render={() => <Redirect to="/users" />} />
       </Switch>
     </Page>
   );

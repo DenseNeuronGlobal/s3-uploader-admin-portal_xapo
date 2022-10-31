@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { Auth } from "aws-amplify";
-import { Route, Redirect } from "react-router-dom";
-import Layout from "../components/Layout";
+import React, {useState} from 'react';
+import {Auth} from 'aws-amplify';
+import {Route, Redirect} from 'react-router-dom';
+import Layout from '../components/Layout';
 
 interface Props {
   component: React.FC;
 }
 
-const ProtectedRoute: React.FC<Props> = ({ component }) => {
+const ProtectedRoute: React.FC<Props> = ({component}) => {
   const [isAuthenticated, setLoggedIn] = React.useState<boolean>(true);
   const [user, setUser] = useState();
 
@@ -32,19 +32,7 @@ const ProtectedRoute: React.FC<Props> = ({ component }) => {
     })();
   }, []);
 
-  return (
-    <Route
-      render={(props) =>
-        isAuthenticated ? (
-          <Layout user={user}>
-            {React.createElement(component)}
-          </Layout>
-        ) : (
-          <Redirect to="/signin" />
-        )
-      }
-    />
-  );
+  return <Route render={props => (isAuthenticated ? <Layout user={user}>{React.createElement(component)}</Layout> : <Redirect to="/signin" />)} />;
 };
 
 export default ProtectedRoute;

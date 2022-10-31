@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useState} from 'react';
 
 export const useInput = (initialValue: string) => {
   const [value, setValue] = useState(initialValue);
@@ -6,14 +6,14 @@ export const useInput = (initialValue: string) => {
   return {
     value,
     setValue,
-    reset: () => setValue(""),
+    reset: () => setValue(''),
     bind: {
       value,
       onChange: (event: React.SyntheticEvent<Element, Event>) => {
         // @ts-ignore
         setValue(event.target.value);
       },
-      required: true,
-    },
+      required: true
+    }
   };
 };
