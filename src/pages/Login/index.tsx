@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FC, useState } from "react";
 import TextField from "@material-ui/core/TextField";
 import { styled } from "@material-ui/core/styles";
 import { Auth } from "aws-amplify";
@@ -9,12 +9,12 @@ import { useHistory } from "react-router-dom";
 import { useInput } from "../../utils/forms";
 import { Toast } from "../../utils/notifications";
 
-const Field: any = styled<any>(TextField)({
+const Field: any = styled(TextField)({
   margin: "10px 0",
 });
 
-const Signin: React.FC = () => {
-  const [loading, setLoading] = React.useState(false);
+const Signin: FC = () => {
+  const [loading, setLoading] = useState<boolean>(false);
 
   const history = useHistory();
 
@@ -30,9 +30,7 @@ const Signin: React.FC = () => {
       Toast("Success!!", "Login Successfully", "success");
       history.push("/");
     } catch (error: any) {
-      if (error) {
-        Toast("Error!!", error.message, "danger");
-      }
+      Toast("Error!!", error.message, "danger");
     }
     setLoading(false);
   };

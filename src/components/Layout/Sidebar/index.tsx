@@ -40,7 +40,7 @@ const Sidebar: React.FC = () => {
     <Drawer>
       {
         NavLinks.map(({ label, path }, index) => (
-          <MenuItem component={NavLink} to={path} activated={path === history.location.pathname}>
+          <MenuItem key={index} component={NavLink} to={path} activated={path === history.location.pathname}>
             {label}
           </MenuItem>
         ))

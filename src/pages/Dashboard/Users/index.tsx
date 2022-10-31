@@ -5,6 +5,8 @@ import { Button, styled } from "@material-ui/core";
 import { AttributeType } from "aws-sdk/clients/cognitoidentityserviceprovider";
 import { COGNITO } from "../../../configs/aws";
 import CommonTable from "../../../components/Table";
+import { Toast } from "../../../utils/notifications";
+import { IUserAttributes, IUserSimple } from "../../../interfaces/user.interface";
 
 const AddButton: any = styled(Button)({
   marginLeft: 'auto',
@@ -12,7 +14,7 @@ const AddButton: any = styled(Button)({
 });
 
 const Users = () => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<IUserSimple[]>([]);
 
   const history = useHistory();
 
@@ -36,7 +38,7 @@ const Users = () => {
     {
       title: 'Created at',
       key: 'UserCreateDate',
-      render: ((row: any) => row?.UserCreateDate?.toDateString()),
+      render: ((row: IUserSimple) => row?.UserCreateDate?.toDateString()),
     }
   ];
 
@@ -48,13 +50,13 @@ const Users = () => {
     const cognito = new AWS.CognitoIdentityServiceProvider();
     cognito.listUsers(params, (err, data) => {
       if (err) {
-        console.log(err);
+        Toast("Error!!", err.message || 'Error', "danger");
+        return;
       }
       else {
         if (data.Users) {
-          // @ts-ignore
           setUsers(data.Users.map((user) => {
-            const attri = user.Attributes && user.Attributes.reduce((attributes: { [key: string]: any }, attribute: AttributeType) => (
+            const attri = user.Attributes && user.Attributes.reduce((attributes: IUserAttributes, attribute: AttributeType) => (
               {
                 ...attributes,
                 [attribute.Name]: attribute.Value,
@@ -63,7 +65,7 @@ const Users = () => {
             return {
               ...user,
               ...attri,
-            };
+            } as IUserSimple;
           }));
         }
       }
@@ -78,6 +80,7 @@ const Users = () => {
       <CommonTable
         columns={columns}
         tableData={users}
+        onRowClick={(row) => history.push(`/users/${row.Username}`)}
       />
     </>
   );

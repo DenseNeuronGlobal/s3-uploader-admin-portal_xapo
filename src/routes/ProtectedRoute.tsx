@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Auth } from "aws-amplify";
 import { Route, Redirect } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -8,8 +8,8 @@ interface Props {
 }
 
 const ProtectedRoute: React.FC<Props> = ({ component }) => {
-  const [isAuthenticated, setLoggedIn] = React.useState(true);
-  const [user, setUser] = React.useState();
+  const [isAuthenticated, setLoggedIn] = React.useState<boolean>(true);
+  const [user, setUser] = useState();
 
   React.useEffect(() => {
     (async () => {

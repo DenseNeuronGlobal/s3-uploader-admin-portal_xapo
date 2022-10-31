@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { styled } from "@material-ui/core/styles";
 import { Avatar, Box, Typography } from "@material-ui/core";
+import { IUser } from "../../../interfaces/user.interface";
 
 const AppHeader: any = styled(Box)(({ theme }) => ({
   height: '60px',
@@ -26,13 +27,16 @@ const UserInfoLabel: any = styled(Typography)(({ theme }) => ({
   textTransform: 'capitalize',
 }));
 
-const Header: React.FC<{ user: any }> = ({ user }) => {
+interface IHeaderProps {
+  user: IUser
+}
+
+const Header: FC<IHeaderProps> = ({ user }) => {
   return (
     <AppHeader>
       <Logo>
         <img src="https://docs.aws.amazon.com/assets/r/images/aws_logo_dark.png" alt="logo" />
       </Logo>
-
       <UserInfo>
         <Avatar />
         <UserInfoLabel>{user?.username}</UserInfoLabel>
