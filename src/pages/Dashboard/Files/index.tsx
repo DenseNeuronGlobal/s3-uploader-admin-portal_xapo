@@ -42,7 +42,6 @@ const Files = () => {
 
         const s3 = new AWS.S3();
         s3.listObjectsV2(params, (err, data) => {
-            console.log('data', data);
             if (err) {
                 console.log(err);
             } else {
