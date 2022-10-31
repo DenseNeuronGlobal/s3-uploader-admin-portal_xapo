@@ -94,7 +94,7 @@ const Sidebar: React.FC = () => {
       <SidebarHeader collapsed={collapsed}>
         {!collapsed && <Typography>Users & S3 Files Management</Typography>}
         <IconButton onClick={() => setCollapsed(!collapsed)}>
-          <img src={collapsed ? `icons/bars.svg` : `icons/close.svg`} alt="icon" />
+          <img src={collapsed ? `/icons/bars.svg` : `/icons/close.svg`} alt="icon" />
         </IconButton>
       </SidebarHeader>
       {!collapsed && (
