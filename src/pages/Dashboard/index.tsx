@@ -15,20 +15,6 @@ const Page: any = styled(Box)({
 });
 
 const Dashboard: React.FC = () => {
-  const history = useHistory();
-
-  const handleLogout = async () => {
-    try {
-      await Auth.signOut();
-      Toast("Success!!", "Logged out successfully!", "success");
-      history.push("/signin");
-    } catch (error: any) {
-      if(error) {
-        Toast("Error!!", error.message, "danger");
-      }
-    }
-  };
-
   return (
     <Page>
       <Switch>
