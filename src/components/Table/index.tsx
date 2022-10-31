@@ -21,7 +21,8 @@ const useStyles = makeStyles(() =>
     tableCell: {
       color: '#16191F',
       lineHeight: '18px',
-      padding: '15px 20px'
+      padding: '15px 20px',
+      '&:hover': 'pointer',
     },
     checkboxTableCell: {
       width: 0,
@@ -78,7 +79,7 @@ const CommonTable: React.FC<ITableProps> = ({
               <TableRow key={key} hover={!!onRowClick} onClick={() => onRowClick && onRowClick(row)}>
                 {showCheckBoxSelection && (
                   <TableCell align="left" className={classes.checkboxTableCell}>
-                    <Checkbox checked={selectedRows.includes(row.id)} onChange={() => handleRowSelection(row.id, selectedRows.includes(row.id))} />
+                    <Checkbox checked={selectedRows.includes(row.id || row.email)} onChange={() => handleRowSelection(row.id || row.email, selectedRows.includes(row.id || row.email))} />
                   </TableCell>
                 )}
                 {columns.map((column: IColumn, columnKey: number) => (
