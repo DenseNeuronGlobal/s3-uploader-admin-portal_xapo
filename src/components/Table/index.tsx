@@ -11,7 +11,13 @@ interface ITableProps {
 const CommonTable: React.FC<ITableProps> = ({
   columns,
   tableData,
+  onRowClick = () => {},
 }) => {
+
+  const handleRowClick = (id: string): void => {
+    onRowClick(id);
+  };
+
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -27,7 +33,7 @@ const CommonTable: React.FC<ITableProps> = ({
 
         <TableBody>
           {tableData && tableData.map((row: any, key: number) => (
-            <TableRow key={key}>
+            <TableRow key={key} onClick={() => handleRowClick(row.id)}>
               {columns.map((column: any, columnKey: number) => (
                 <TableCell key={columnKey} align="left">
                   {column.render
