@@ -1,11 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {COGNITO} from "../../../configs/aws";
-import AWS from "aws-sdk";
-import {AttributeType} from "aws-sdk/clients/cognitoidentityserviceprovider";
-import CommonTable from "../../../components/Table";
-import { Button } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
-import { styled } from "@material-ui/core/styles";
+import AWS from "aws-sdk";
+import { Button, styled } from "@material-ui/core";
+import { AttributeType } from "aws-sdk/clients/cognitoidentityserviceprovider";
+import { COGNITO } from "../../../configs/aws";
+import CommonTable from "../../../components/Table";
 
 const AddButton: any = styled(Button)({
   marginLeft: 'auto',

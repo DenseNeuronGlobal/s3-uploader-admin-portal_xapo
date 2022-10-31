@@ -1,18 +1,13 @@
 import React from "react";
-import TextField from "@material-ui/core/TextField";
-import { styled } from "@material-ui/core/styles";
-import { Auth } from "aws-amplify";
-import Button from "@material-ui/core/Button";
-import CircularProgress from "@material-ui/core/CircularProgress";
 import { useHistory } from "react-router-dom";
-import {Card, Grid} from "@material-ui/core";
+import { Button, Card, Grid, TextField, styled, CircularProgress} from "@material-ui/core";
+import AWS from "aws-sdk";
 import { Toast } from "../../../utils/notifications";
 import { useInput } from "../../../utils/forms";
-import AWS from "aws-sdk";
-import {COGNITO} from "../../../configs/aws";
+import { COGNITO } from "../../../configs/aws";
 
 AWS.config.update({ region: COGNITO.REGION, accessKeyId: COGNITO.ACCESS_KEY_ID, secretAccessKey: COGNITO.SECRETE_ACCESS_KEY });
-const s3 = new AWS.S3({apiVersion: '2006-03-01'});
+const s3 = new AWS.S3();
 
 const FormPaper: any = styled(Card)({
   padding: "20px",
@@ -25,18 +20,16 @@ const Field: any = styled(TextField)({
 
 const AddButton: any = styled(Button)({
   marginLeft: 'auto',
-  marginBottom: '10px',
+  marginTop: '20px',
 });
 
-const AddUser: React.FC = () => {
+const UserDetail: React.FC = () => {
   const [loading, setLoading] = React.useState(false);
 
   const history = useHistory();
 
   const { value: name, bind: bindName } = useInput("");
   const { value: email, bind: bindEmail } = useInput("");
-  const { value: phone, bind: bindPhone } = useInput("");
-  const { value: company, bind: bindCompany } = useInput("");
   const { value: password, bind: bindPassword } = useInput("");
   const { value: confirmPassword, bind: bindConfirmPassword } = useInput("");
 
@@ -75,17 +68,12 @@ const AddUser: React.FC = () => {
         if (err) {
           console.log(err);
         } else {
-          const bucketParams = {
-            Bucket: email,
+          const params = {
+            Bucket: COGNITO.S3_BUCKET,
+            Key: `${email}/`
           };
 
-          s3.createBucket(bucketParams, function(err, data) {
-            if (err) {
-              console.log("Error", err);
-            } else {
-              console.log("Success", data.Location);
-            }
-          });
+          s3.putObject(params).promise();
           Toast("Success!!", "User created successfully", "success");
           history.push("/users");
         }
@@ -99,7 +87,6 @@ const AddUser: React.FC = () => {
 
   return (
     <FormPaper>
-      <AddButton>Add</AddButton>
       <form
         style={{
           display: "flex",
@@ -116,12 +103,6 @@ const AddUser: React.FC = () => {
             <Field label="Email" {...bindEmail} type="email" />
           </Grid>
           <Grid item xs={1} md={6}>
-            <Field label="Phone" {...bindPhone} type="tel" />
-          </Grid>
-          <Grid item xs={1} md={6}>
-            <Field label="Company" {...bindCompany} />
-          </Grid>
-          <Grid item xs={1} md={6}>
             <Field label="Password" type="password" {...bindPassword} />
           </Grid>
           <Grid item xs={1} md={6}>
@@ -132,8 +113,8 @@ const AddUser: React.FC = () => {
             />
           </Grid>
         </Grid>
-        <Button
-          variant="contained"
+        <AddButton
+          variant="outlined"
           color="primary"
           size="large"
           type="submit"
@@ -141,10 +122,10 @@ const AddUser: React.FC = () => {
         >
           {loading && <CircularProgress size={20} style={{ marginRight: 20 }} />}
           Add
-        </Button>
+        </AddButton>
       </form>
     </FormPaper>
   );
 };
 
-export default AddUser;
+export default UserDetail;
