@@ -41,7 +41,7 @@ const UserDetail: React.FC = () => {
   const { value: confirmPassword, bind: bindConfirmPassword } = useInput("");
 
   useEffect(() => {
-    if (username !== 'new') {
+    if (username && username !== 'new') {
       setIsEidt(true);
       const cognitoParams = {
         UserPoolId: COGNITO.USER_POOL_ID,
@@ -95,7 +95,7 @@ const UserDetail: React.FC = () => {
         } else {
           const params = {
             Bucket: COGNITO.S3_BUCKET,
-            Key: `${email}/`
+            Key: `${name}/`
           };
 
           s3.putObject(params).promise();
@@ -119,10 +119,15 @@ const UserDetail: React.FC = () => {
     const cognito = new AWS.CognitoIdentityServiceProvider();
     cognito.adminDeleteUser(cognitoParams, (err, data) => {
       if (err) {
-        console.log('err', err);
         return;
       }
-      console.log('>>>', data);
+
+      const params = {
+        Bucket: COGNITO.S3_BUCKET,
+        Key: `${username}/`
+      };
+
+      s3.deleteObject(params).promise();
       history.push('/users');
     });
   };

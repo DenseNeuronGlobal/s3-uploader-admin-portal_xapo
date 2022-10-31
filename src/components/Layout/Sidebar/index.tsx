@@ -1,25 +1,46 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {styled, Theme} from "@material-ui/core/styles";
-import {Box, ButtonBase, Typography} from "@material-ui/core";
-import {NavLink, useHistory} from "react-router-dom";
+import { Box, ButtonBase, Typography, IconButton } from "@material-ui/core";
+import { NavLink, useHistory} from "react-router-dom";
 
-const Drawer: any = styled(Box)(({ theme }) => ({
-  width: '256px',
+const Drawer: any = styled(Box)(({ theme, collapsed }: { theme: Theme, collapsed: boolean }) => ({
+  width: collapsed ? '40px' : '256px',
   backgroundColor: 'white',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
-  padding: '36px 20px',
-  boxShadow: theme.shadows[1]
+  boxShadow: theme.shadows[1],
+  overflowX: 'hidden',
+  transition: 'width 0.2s ease-in',
 }));
 
 const MenuItem: any = styled(ButtonBase)(({ theme, activated }: { theme: Theme, activated: boolean }) => ({
   backgroundColor: 'white',
-  fontSize: '20px',
-  padding: '10px 0',
-  width: '100%',
-  color: activated ? theme.palette.primary.main : '#000',
+  fontSize: '16px',
+  margin: '12px 0',
+  color: activated ? '#ec7211' : '#000',
   textDecoration: 'none'
+}));
+
+const SidebarHeader: any = styled(Box)(({ theme, collapsed }: { theme: Theme, collapsed: boolean }) => ({
+  padding: collapsed ? '0' : '24px',
+  borderBottom: '1px solid #eaeded',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+
+  '& .MuiTypography-root': {
+    fontSize: '18px',
+    fontWeight: 700,
+  }
+}));
+
+const MenuList: any = styled(Box)(({ theme }) => ({
+  marginTop: '10px',
+  padding: '0 24px',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
 }));
 
 const NavLinks = [
@@ -35,15 +56,30 @@ const NavLinks = [
 
 const Sidebar: React.FC = () => {
   const history = useHistory();
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <Drawer>
+    <Drawer collapsed={collapsed}>
+      <SidebarHeader collapsed={collapsed}>
+        {
+          !collapsed && (<Typography>Users & S3 Files Management</Typography>)
+        }
+        <IconButton onClick={() => setCollapsed(!collapsed)}>
+          X
+        </IconButton>
+      </SidebarHeader>
       {
-        NavLinks.map(({ label, path }, index) => (
-          <MenuItem key={index} component={NavLink} to={path} activated={path === history.location.pathname}>
-            {label}
-          </MenuItem>
-        ))
+        !collapsed && (
+          <MenuList>
+            {
+              NavLinks.map(({ label, path }, index) => (
+                <MenuItem key={index} component={NavLink} to={path} activated={path === history.location.pathname}>
+                  {label}
+                </MenuItem>
+              ))
+            }
+          </MenuList>
+        )
       }
     </Drawer>
   );
