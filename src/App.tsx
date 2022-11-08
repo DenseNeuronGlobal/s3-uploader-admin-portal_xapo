@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import {COGNITO} from './configs/aws';
 import ProtectedRoute from './routes/ProtectedRoute';
 import Signin from './pages/Login';
+import ResetPassword from './pages/Forgot';
 import AWS from 'aws-sdk';
 
 Amplify.configure({
@@ -21,6 +22,9 @@ const App: React.FC = () => {
       <Switch>
         <Route path="/signin">
           <Signin />
+        </Route>
+        <Route path="/forgot">
+          <ResetPassword />
         </Route>
         <Route path="/">
           <ProtectedRoute component={Dashboard} />

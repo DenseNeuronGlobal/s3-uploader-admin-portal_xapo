@@ -8,7 +8,10 @@ import CommonTable from '../../../components/Table';
 import {Toast} from '../../../utils/notifications';
 import {IUserAttributes, IUserSimple} from '../../../interfaces/user.interface';
 import CommonBreadCrumb from '../../../components/BreadCrumbs';
-import {IPath} from '../../../interfaces/global.interface';
+import {IPath, IRow} from '../../../interfaces/global.interface';
+import {Add, DeleteOutline} from "@material-ui/icons";
+import SearchField from "../../../components/Search";
+import {useInput} from "../../../utils/forms";
 
 const AddButton: any = styled(Button)({
   marginLeft: '10px',
@@ -16,12 +19,25 @@ const AddButton: any = styled(Button)({
 
 const RemoveButton: any = styled(Button)({
   marginLeft: '10px',
-  color: '#d32f2f',
 });
 
 const ActionWrapper: any = styled(Box)({
-  marginLeft: 'auto',
+  display: 'flex',
+  justifyContent: 'space-between',
   marginBottom: '10px'
+});
+
+const UserNameCell: any = styled(Box)({
+  marginLeft: 'auto',
+  marginBottom: '10px',
+  cursor: 'pointer',
+  color: '#783326',
+  fontSize: '14px',
+  lineHeight: '22px',
+  '&:hover': {
+    color: '#783326',
+    textDecoration: 'underline'
+  }
 });
 
 const defaultPath: IPath = {
@@ -29,31 +45,26 @@ const defaultPath: IPath = {
   to: '/users'
 };
 
-const UserNameCell: any = styled(Box)({
-  marginLeft: 'auto',
-  marginBottom: '10px',
-  cursor: 'pointer',
-  color: '#0073bb',
-  fontSize: '14px',
-  lineHeight: '22px',
-  '&:hover': {
-    color: '#0073bb',
-    textDecoration: 'underline'
-  }
-});
-
 const Users = () => {
   const [users, setUsers] = useState<IUserSimple[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
+  const {value: search, bind: bindSearch} = useInput('');
+
   const history = useHistory();
+  const cognito = new AWS.CognitoIdentityServiceProvider();
 
   const columns = [
     {
+      title: 'Id',
+      key: 'custom:identityId',
+      render: (row: IRow) => row['custom:identityId'] || '-'
+    },
+    {
       title: 'Name',
       key: 'Username',
-      render: (row: IUserSimple) => (
-        <UserNameCell onClick={() => onRowClick(row.Username)}>
+      render: (row: IRow) => (
+        <UserNameCell onClick={() => onRowClick(row.Username as string)}>
           {row.Username}
         </UserNameCell>
       )
@@ -81,49 +92,60 @@ const Users = () => {
     {
       title: 'Updated',
       key: ' UserLastModifiedDate',
-      render: (row: IUserSimple) => row?.UserLastModifiedDate?.toDateString()
+      render: (row: IRow) => (row?.UserLastModifiedDate as Date)?.toDateString()
     },
     {
       title: 'Created',
       key: 'UserCreateDate',
-      render: (row: IUserSimple) => row?.UserCreateDate?.toDateString()
+      render: (row: IRow) => (row?.UserCreateDate as Date)?.toDateString()
     }
   ];
 
-  useEffect(() => {
-
+  const fetchUsers = (extra: any = {}) => {
     let params = {
-      UserPoolId: COGNITO.USER_POOL_ID
+      UserPoolId: COGNITO.USER_POOL_ID,
+      ...extra
     };
 
-    const cognito = new AWS.CognitoIdentityServiceProvider();
     cognito.listUsers(params, (err, data) => {
       if (err) {
         Toast('Error!!', err.message || 'Error', 'danger');
         return;
       } else {
         if (data.Users) {
+          console.log('data.Users', data.Users);
           setUsers(
-            data.Users.map(user => {
-              const attri =
-                user.Attributes &&
-                user.Attributes.reduce(
-                  (attributes: IUserAttributes, attribute: AttributeType) => ({
-                    ...attributes,
-                    [attribute.Name]: attribute.Value
-                  }),
-                  {}
-                );
-              return {
-                ...user,
-                ...attri
-              } as IUserSimple;
-            })
+              data.Users.map(user => {
+                const attri =
+                    user.Attributes &&
+                    user.Attributes.reduce(
+                        (attributes: IUserAttributes, attribute: AttributeType) => ({
+                          ...attributes,
+                          [attribute.Name]: attribute.Value
+                        }),
+                        {}
+                    );
+                return {
+                  ...user,
+                  ...attri
+                } as IUserSimple;
+              })
           );
         }
       }
     });
-  }, []);
+  };
+
+  useEffect(() => {
+    if (search) {
+      const params = {
+        Filter: `username ^= \"${search}\"`
+      }
+      fetchUsers(params);
+    } else {
+      fetchUsers();
+    }
+  }, [search]);
 
   const handleDeleteObjects = () => {
 
@@ -137,16 +159,23 @@ const Users = () => {
     <>
       <CommonBreadCrumb paths={[defaultPath]} />
       <ActionWrapper>
-        <RemoveButton color="inherit" variant="outlined" disabled={selectedRows.length === 0} onClick={handleDeleteObjects}>
-          Delete
-        </RemoveButton>
-        <AddButton color="primary" variant="outlined" onClick={() => history.push('/users/new')}>
-          Add User
-        </AddButton>
+        <Box>
+          <SearchField placeholder={"Search Users"} {...bindSearch} />
+        </Box>
+        <Box>
+          <RemoveButton color="inherit" variant="outlined" size={"medium"} disabled={selectedRows.length === 0} onClick={handleDeleteObjects} className={"amplify-button--error"}>
+            <DeleteOutline fontSize={"small"} />
+            Delete
+          </RemoveButton>
+          <AddButton color="primary" variant="outlined" size={"medium"} onClick={() => history.push('/users/new')} className={"amplify-button"}>
+            <Add fontSize={"small"} />
+            Add User
+          </AddButton>
+        </Box>
       </ActionWrapper>
       <CommonTable
         showCheckBoxSelection
-        columns={columns}
+        tableColumns={columns}
         tableData={users}
         selectedRows={selectedRows}
         setSelectedRows={setSelectedRows}

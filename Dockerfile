@@ -1,4 +1,4 @@
-FROM node:15.4 as build
+FROM node:16.4 as build
 
 WORKDIR /denseneuron-react-aws
 

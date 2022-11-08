@@ -5,9 +5,11 @@ import AWS from 'aws-sdk';
 import {Toast} from '../../../utils/notifications';
 import {useInput} from '../../../utils/forms';
 import {COGNITO} from '../../../configs/aws';
+import {Add, DeleteOutline, EditOutlined} from "@material-ui/icons";
+import CommonBreadCrumb from "../../../components/BreadCrumbs";
+import {IPath} from "../../../interfaces/global.interface";
 
 AWS.config.update({region: COGNITO.REGION, accessKeyId: COGNITO.ACCESS_KEY_ID, secretAccessKey: COGNITO.SECRETE_ACCESS_KEY});
-const s3 = new AWS.S3();
 
 const FormPaper: any = styled(Card)({
   padding: '20px'
@@ -28,12 +30,19 @@ const ActionFooter: any = styled(Box)({
   justifyContent: 'flex-end'
 });
 
+const defaultPath: IPath = {
+  title: 'User List',
+  to: '/users'
+};
+
 const UserDetail: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [isEdit, setIsEidt] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
 
   const history = useHistory();
   const {username} = useParams<{username: string}>();
+  const cognito = new AWS.CognitoIdentityServiceProvider();
+  const s3 = new AWS.S3();
 
   const {value: name, bind: bindName, setValue: setName} = useInput('');
   const {value: email, bind: bindEmail, setValue: setEmail} = useInput('');
@@ -42,17 +51,18 @@ const UserDetail: React.FC = () => {
 
   useEffect(() => {
     if (username && username !== 'new') {
-      setIsEidt(true);
+      setIsEdit(true);
       const cognitoParams = {
         UserPoolId: COGNITO.USER_POOL_ID,
         Username: username
       };
-      const cognito = new AWS.CognitoIdentityServiceProvider();
       cognito.adminGetUser(cognitoParams, (err, data) => {
-        setName(data.Username);
+        if (data) {
+          setName(data.Username);
 
-        if (data.UserAttributes) {
-          setEmail(data.UserAttributes.find(attr => attr.Name === 'email')?.Value || '');
+          if (data.UserAttributes) {
+            setEmail(data.UserAttributes.find(attr => attr.Name === 'email')?.Value || '');
+          }
         }
       });
     }
@@ -129,43 +139,64 @@ const UserDetail: React.FC = () => {
   };
 
   return (
-    <FormPaper>
-      <form
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between'
-        }}
-        onSubmit={handleSignUp}
-      >
-        <Grid container spacing={4}>
-          <Grid item xs={1} md={6}>
-            <Field label="Name" {...bindName} />
+    <>
+      <CommonBreadCrumb
+        paths={[
+          defaultPath,
+          {
+            title: username
+          }
+        ]}
+      />
+      <FormPaper>
+        <form
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
+          }}
+          onSubmit={handleSignUp}
+        >
+          <Grid container spacing={4}>
+            <Grid item xs={1} md={6}>
+              <Field label="Name" {...bindName} />
+            </Grid>
+            <Grid item xs={1} md={6}>
+              <Field label="Email" {...bindEmail} type="email" />
+            </Grid>
+            <Grid item xs={1} md={6}>
+              <Field label="Password" type="password" {...bindPassword} disabled={isEdit} />
+            </Grid>
+            <Grid item xs={1} md={6}>
+              <Field label="Confirm Password" type="password" disabled={isEdit} {...bindConfirmPassword} />
+            </Grid>
           </Grid>
-          <Grid item xs={1} md={6}>
-            <Field label="Email" {...bindEmail} type="email" />
-          </Grid>
-          <Grid item xs={1} md={6}>
-            <Field label="Password" type="password" {...bindPassword} disabled={isEdit} />
-          </Grid>
-          <Grid item xs={1} md={6}>
-            <Field label="Confirm Password" type="password" disabled={isEdit} {...bindConfirmPassword} />
-          </Grid>
-        </Grid>
 
-        <ActionFooter>
-          {isEdit && (
-            <ActionButton variant="outlined" color="error" size="large" onClick={handleRemove} disabled={loading}>
-              Delete
+          <ActionFooter>
+            {isEdit && (
+              <ActionButton variant="outlined" color="error" size="medium" onClick={handleRemove} disabled={loading} className={"amplify-button--error"}>
+                <DeleteOutline fontSize={"small"} />
+                Delete
+              </ActionButton>
+            )}
+            <ActionButton variant="outlined" color="primary" size="medium" type="submit" disabled={loading} className={"amplify-button"}>
+              {loading && <CircularProgress size={20} style={{marginRight: 20}} />}
+              {isEdit ? (
+                  <>
+                    <EditOutlined fontSize={"small"} />
+                    Edit
+                  </>
+                  ) : (
+                  <>
+                    <Add fontSize={"small"} />
+                    Add
+                  </>
+              )}
             </ActionButton>
-          )}
-          <ActionButton variant="outlined" color="primary" size="large" type="submit" disabled={loading}>
-            {loading && <CircularProgress size={20} style={{marginRight: 20}} />}
-            {isEdit ? 'Edit' : 'Add'}
-          </ActionButton>
-        </ActionFooter>
-      </form>
-    </FormPaper>
+          </ActionFooter>
+        </form>
+      </FormPaper>
+    </>
   );
 };
 
