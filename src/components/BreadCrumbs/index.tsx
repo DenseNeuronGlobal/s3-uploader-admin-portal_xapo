@@ -12,11 +12,11 @@ const useStyles = makeStyles(() =>
     },
     activeBreadCrumb: {
       cursor: 'pointer',
-      color: '#0073bb',
+      color: '#783326',
       fontSize: '14px',
       lineHeight: '22px',
       '&:hover': {
-        color: '#0073bb',
+        color: '#783326',
         textDecoration: 'underline'
       }
     },
@@ -43,12 +43,12 @@ const CommonBreadCrumb: React.FC<IBreadCrumbs> = ({paths}) => {
       {paths.map((path: IPath, index: number) => {
         const active = paths.length - 1 !== index;
         return path.to && active ? (
-          <Link component={RouterLink} to={path.to} key={index}>
+          <Link component={RouterLink} to={path.to} key={`breadcrumb-${index}`} className={classes.activeBreadCrumb}>
             {path.title}
           </Link>
         ) : (
           <Typography
-            key={index}
+            key={`breadcrumb-${index}`}
             color={active ? 'primary' : 'textSecondary'}
             onClick={() => active && path.onClick && path.onClick()}
             className={active ? classes.activeBreadCrumb : classes.inActiveBreadCrumb}

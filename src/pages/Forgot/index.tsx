@@ -2,14 +2,9 @@ import React, {FC, useState} from 'react';
 import {Link as RouterLink, useHistory} from 'react-router-dom';
 import {Box, Button, Card, CircularProgress, Link, styled} from '@material-ui/core';
 import {Auth} from 'aws-amplify';
-import AWS from 'aws-sdk';
-import {COGNITO} from '../../configs/aws';
 import {useInput} from '../../utils/forms';
 import {Toast} from '../../utils/notifications';
 import InputField from "../../components/Field";
-import {IUserSimple} from "../../interfaces/user.interface";
-
-AWS.config.update({region: COGNITO.REGION, accessKeyId: COGNITO.ACCESS_KEY_ID, secretAccessKey: COGNITO.SECRETE_ACCESS_KEY});
 
 const Page: any = styled(Box)({
   margin: '0 auto',
@@ -31,12 +26,12 @@ const FormWrapper: any = styled(Card)({
   boxShadow: '0 2px 6px rgba(13, 26, 38, 0.15)'
 })
 
-const ResetPassword: any = styled(Box)({
+const BackToSignIn: any = styled(Box)({
   marginTop: '20px',
   textAlign: 'center',
 });
 
-const ResetPasswordLink: any = styled(Link)({
+const BackToSignInLink: any = styled(Link)({
   padding: '3.75px 7.5px',
   fontSize: '15px',
   fontWeight: 400,
@@ -48,45 +43,45 @@ const ResetPasswordLink: any = styled(Link)({
   }
 });
 
-const Signin: FC = () => {
+const ResetPassword: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
+  const [sendCode, setSendCode] = useState<boolean>(false);
 
   const history = useHistory();
-  const cognito = new AWS.CognitoIdentityServiceProvider();
 
   const {value: email, bind: bindEmail} = useInput('');
+  const {value: code, bind: bindCode} = useInput('');
   const {value: password, bind: bindPassword} = useInput('');
+
+  const savePassword = async () => {
+    try {
+      await Auth.forgotPasswordSubmit(email, code, password);
+      Toast('Success!!', 'Reset password Successfully', 'success');
+      history.push('/');
+    } catch (error: any) {
+      Toast('Error!!', error.message, 'danger');
+    }
+  };
+
+  const sendResetPasswordCode = async () => {
+    try {
+      await Auth.forgotPassword(email);
+      Toast('Success!!', 'Reset password code send Successfully', 'success');
+      setSendCode(true);
+    } catch (error: any) {
+      Toast('Error!!', error.message, 'danger');
+    }
+  };
 
   const handleSubmit = async (e: React.SyntheticEvent<Element, Event>) => {
     e.preventDefault();
     setLoading(true);
 
-    const params = {
-      UserPoolId: COGNITO.USER_POOL_ID,
-      GroupName: 'Admin'
-    };
-
-    cognito.listUsersInGroup(params, async (err, data) => {
-      if (err) {
-        console.log('error', err);
-      }
-      if (data) {
-        // @ts-ignore
-        const isAdminUser = !!data.Users.find((user: IUserSimple) => user.Username === email);
-        if (isAdminUser) {
-          try {
-            const a = await Auth.signIn(email, password);
-            console.log('a', a)
-            Toast('Success!!', 'Login Successfully', 'success');
-            history.push('/');
-          } catch (error: any) {
-            Toast('Error!!', error.message, 'danger');
-          }
-        } else {
-          Toast('Error!!', 'Access Unauthorized!', 'danger');
-        }
-      }
-    });
+    if (sendCode) {
+      await savePassword();
+    } else {
+      await sendResetPasswordCode();
+    }
     setLoading(false);
   };
 
@@ -105,20 +100,25 @@ const Signin: FC = () => {
           }}
           onSubmit={handleSubmit}
         >
-          <h1 style={{fontSize: '20px', fontWeight: 500, margin: "0 0 20px"}}>Sign in to your account</h1>
+          <h1 style={{fontSize: '20px', fontWeight: 500, margin: "0 0 20px"}}>Reset your password</h1>
           <InputField placeholder="Enter your email" {...bindEmail} />
-          <InputField placeholder="Enter your password" type="password" {...bindPassword} />
+          {sendCode && (
+              <>
+                <InputField placeholder="Enter code" {...bindCode} />
+                <InputField placeholder="Enter new password" {...bindPassword} />
+              </>
+          )}
           <Button variant="contained" color="primary" size="medium" type="submit" disabled={loading} className={"amplify-button"}>
             {loading && <CircularProgress size={20} style={{marginRight: 20}} />}
-            Sign in
+            {sendCode ? 'Change Password' : 'Send Code'}
           </Button>
         </form>
-        <ResetPassword>
-          <ResetPasswordLink to="/forgot" component={RouterLink}>Forgot your password</ResetPasswordLink>
-        </ResetPassword>
+        <BackToSignIn>
+          <BackToSignInLink to="/signin" component={RouterLink}>Back to Sign In</BackToSignInLink>
+        </BackToSignIn>
       </FormWrapper>
     </Page>
   );
 };
 
-export default Signin;
+export default ResetPassword;

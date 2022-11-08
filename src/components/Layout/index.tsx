@@ -16,6 +16,11 @@ const Aside: any = styled(Box)(({theme}) => ({
   }
 }));
 
+const Content: any = styled(Box)({
+    width: 'calc(100% - 256px)',
+    height: '100%'
+});
+
 interface ILayoutProps {
   children: ReactNode;
   user: any;
@@ -27,7 +32,9 @@ const Layout: React.FC<ILayoutProps> = ({children, user}) => {
       <Header user={user} />
       <Aside>
         <Sidebar />
-        {children}
+          <Content>
+            {children}
+          </Content>
       </Aside>
     </MainLayout>
   );
