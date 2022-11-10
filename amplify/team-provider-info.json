@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-s3admin-dev-134814-authRole",
+      "UnauthRoleArn": "arn:aws:iam::864614353356:role/amplify-s3admin-dev-134814-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::864614353356:role/amplify-s3admin-dev-134814-authRole",
+      "Region": "eu-west-2",
+      "DeploymentBucketName": "amplify-s3admin-dev-134814-deployment",
+      "UnauthRoleName": "amplify-s3admin-dev-134814-unauthRole",
+      "StackName": "amplify-s3admin-dev-134814",
+      "StackId": "arn:aws:cloudformation:eu-west-2:864614353356:stack/amplify-s3admin-dev-134814/534f9ec0-60fe-11ed-920d-0ac49305d196",
+      "AmplifyAppId": "d1gddk4qzwnhk"
+    },
+    "categories": {
+      "hosting": {
+        "S3AndCloudFront": {}
+      },
+      "auth": {
+        "s3admina69921c8": {}
+      }
+    }
+  }
+}
