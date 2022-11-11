@@ -9,8 +9,6 @@ import {Add, DeleteOutline, EditOutlined} from "@material-ui/icons";
 import CommonBreadCrumb from "../../../components/BreadCrumbs";
 import {IPath} from "../../../interfaces/global.interface";
 
-AWS.config.update({region: COGNITO.REGION, accessKeyId: COGNITO.ACCESS_KEY_ID, secretAccessKey: COGNITO.SECRETE_ACCESS_KEY});
-
 const FormPaper: any = styled(Card)({
   padding: '20px'
 });

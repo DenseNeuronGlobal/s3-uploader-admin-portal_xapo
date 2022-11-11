@@ -2,14 +2,10 @@ import React, {FC, useState} from 'react';
 import {Link as RouterLink, useHistory} from 'react-router-dom';
 import {Box, Button, Card, CircularProgress, Link, styled} from '@material-ui/core';
 import {Auth} from 'aws-amplify';
-import AWS from 'aws-sdk';
-import {COGNITO} from '../../configs/aws';
 import {useInput} from '../../utils/forms';
 import {Toast} from '../../utils/notifications';
 import InputField from "../../components/Field";
 import {IUserSimple} from "../../interfaces/user.interface";
-
-AWS.config.update({region: COGNITO.REGION, accessKeyId: COGNITO.ACCESS_KEY_ID, secretAccessKey: COGNITO.SECRETE_ACCESS_KEY});
 
 const Page: any = styled(Box)({
   margin: '0 auto',
@@ -52,7 +48,6 @@ const Signin: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const history = useHistory();
-  const cognito = new AWS.CognitoIdentityServiceProvider();
 
   const {value: email, bind: bindEmail} = useInput('');
   const {value: password, bind: bindPassword} = useInput('');
@@ -61,32 +56,18 @@ const Signin: FC = () => {
     e.preventDefault();
     setLoading(true);
 
-    const params = {
-      UserPoolId: COGNITO.USER_POOL_ID,
-      GroupName: 'Admin'
-    };
-
-    cognito.listUsersInGroup(params, async (err, data) => {
-      if (err) {
-        console.log('error', err);
+    try {
+      const userDetail = await Auth.signIn(email, password);
+      console.log(userDetail.signInUserSession.accessToken.payload);
+      if (userDetail.signInUserSession.accessToken.payload["cognito:groups"].includes("Admin")) {
+        Toast('Success!!', 'Login Successfully', 'success');
+        history.push('/');
+      } else {
+        Toast('Error!!', "Unauthorized!", 'danger');
       }
-      if (data) {
-        // @ts-ignore
-        const isAdminUser = !!data.Users.find((user: IUserSimple) => user.Username === email);
-        if (isAdminUser) {
-          try {
-            const a = await Auth.signIn(email, password);
-            console.log('a', a)
-            Toast('Success!!', 'Login Successfully', 'success');
-            history.push('/');
-          } catch (error: any) {
-            Toast('Error!!', error.message, 'danger');
-          }
-        } else {
-          Toast('Error!!', 'Access Unauthorized!', 'danger');
-        }
-      }
-    });
+    } catch (error: any) {
+      Toast('Error!!', error.message, 'danger');
+    }
     setLoading(false);
   };
 

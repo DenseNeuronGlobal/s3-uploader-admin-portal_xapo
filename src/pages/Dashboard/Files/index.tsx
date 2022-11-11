@@ -3,6 +3,7 @@ import {Box, Button, styled} from '@material-ui/core';
 import {saveAs} from "file-saver";
 import {COGNITO} from '../../../configs/aws';
 import AWS from 'aws-sdk';
+import {Storage, Auth, API} from 'aws-amplify';
 import CommonTable from '../../../components/Table';
 import CommonBreadCrumb from '../../../components/BreadCrumbs';
 import {IColumn, IPath, IRow} from '../../../interfaces/global.interface';
@@ -74,6 +75,28 @@ const Files = () => {
       key: 'Size'
     }
   ];
+  
+  const fetchUserList = async () => {
+    let apiName = 'AdminQueries';
+    let path = '/listUsers';
+    console.log('token', (await Auth.currentSession()).getAccessToken().getJwtToken())
+    let myInit = {
+      queryStringParameters: {
+        "limit": 5,
+        // "token": nextToken
+      },
+      headers: {
+        'Content-Type' : 'application/json',
+        Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
+      }
+    }
+    try {
+      const users = await API.get(apiName, path, myInit);
+      console.log('users', users);
+    } catch (e: any) {
+      console.log(e);
+    }
+  }
 
   const fetchUserIdentities = (searchValue: string = ''): void => {
     setLoading(true);
@@ -233,7 +256,8 @@ const Files = () => {
   };
 
   useEffect(() => {
-    fetchUserIdentities();
+    // fetchUserIdentities();
+    fetchUserList();
   }, []);
 
   return (
