@@ -1,4 +1,4 @@
-# Denseneuron Test Project
+# S3 Upload Admin Portal
 
 This is the purpose of evaluating skills of React and AWS experiences.
 
