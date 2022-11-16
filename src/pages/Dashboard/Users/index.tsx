@@ -1,12 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {useHistory} from 'react-router-dom';
-import AWS from 'aws-sdk';
+import {Auth, API} from 'aws-amplify';
 import {Box, Button, styled} from '@material-ui/core';
-import {AttributeType} from 'aws-sdk/clients/cognitoidentityserviceprovider';
-import {COGNITO} from '../../../configs/aws';
 import CommonTable from '../../../components/Table';
 import {Toast} from '../../../utils/notifications';
-import {IUserAttributes, IUserSimple} from '../../../interfaces/user.interface';
+import {IUserAttributes, IUserSimple, IUserResponse, IAttribute} from '../../../interfaces/user.interface';
 import CommonBreadCrumb from '../../../components/BreadCrumbs';
 import {IPath, IRow} from '../../../interfaces/global.interface';
 import {Add, DeleteOutline} from "@material-ui/icons";
@@ -52,7 +50,6 @@ const Users = () => {
   const {value: search, bind: bindSearch} = useInput('');
 
   const history = useHistory();
-  const cognito = new AWS.CognitoIdentityServiceProvider();
 
   const columns = [
     {
@@ -92,48 +89,47 @@ const Users = () => {
     {
       title: 'Updated',
       key: ' UserLastModifiedDate',
-      render: (row: IRow) => (row?.UserLastModifiedDate as Date)?.toDateString()
+      render: (row: IRow) => row.UserLastModifiedDate ? new Date(row.UserLastModifiedDate).toDateString() : '-'
     },
     {
       title: 'Created',
       key: 'UserCreateDate',
-      render: (row: IRow) => (row?.UserCreateDate as Date)?.toDateString()
+      render: (row: IRow) => row.UserLastModifiedDate ? new Date(row.UserCreateDate).toDateString() : '-'
     }
   ];
 
-  const fetchUsers = (extra: any = {}) => {
-    let params = {
-      UserPoolId: COGNITO.USER_POOL_ID,
-      ...extra
-    };
-
-    cognito.listUsers(params, (err, data) => {
-      if (err) {
-        Toast('Error!!', err.message || 'Error', 'danger');
-        return;
-      } else {
-        if (data.Users) {
-          console.log('data.Users', data.Users);
-          setUsers(
-              data.Users.map(user => {
-                const attri =
-                    user.Attributes &&
-                    user.Attributes.reduce(
-                        (attributes: IUserAttributes, attribute: AttributeType) => ({
-                          ...attributes,
-                          [attribute.Name]: attribute.Value
-                        }),
-                        {}
-                    );
-                return {
-                  ...user,
-                  ...attri
-                } as IUserSimple;
-              })
-          );
-        }
+  const fetchUsers = async (extra: any = {}) => {
+    const apiName = 'AdminQueries';
+    const path = '/listUsers';
+    const myInit = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
       }
-    });
+    }
+    
+    try {
+      const data = await API.get(apiName, path, myInit);
+      setUsers(
+        data.Users.map((user: IUserResponse) => {
+          const attri =
+              user.Attributes &&
+              user.Attributes.reduce(
+                  (attributes: IUserAttributes, attribute: IAttribute) => ({
+                    ...attributes,
+                    [attribute.Name]: attribute.Value
+                  }),
+                  {}
+              );
+          return {
+            ...user,
+            ...attri
+          } as IUserSimple;
+        })
+      );
+    } catch (e: any) {
+      console.log("error", e.message);
+    }
   };
 
   useEffect(() => {
@@ -175,6 +171,7 @@ const Users = () => {
       </ActionWrapper>
       <CommonTable
         showCheckBoxSelection
+        key="email"
         tableColumns={columns}
         tableData={users}
         selectedRows={selectedRows}

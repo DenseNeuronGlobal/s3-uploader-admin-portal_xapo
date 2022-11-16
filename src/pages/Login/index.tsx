@@ -46,19 +46,17 @@ const ResetPasswordLink: any = styled(Link)({
 
 const Signin: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
-
   const history = useHistory();
-
   const {value: email, bind: bindEmail} = useInput('');
   const {value: password, bind: bindPassword} = useInput('');
-
   const handleSubmit = async (e: React.SyntheticEvent<Element, Event>) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const userDetail = await Auth.signIn(email, password);
-      console.log(userDetail.signInUserSession.accessToken.payload);
+      console.log(userDetail);
+      const user = await Auth.currentUserCredentials();
+      console.log('user', user);
       if (userDetail.signInUserSession.accessToken.payload["cognito:groups"].includes("Admin")) {
         Toast('Success!!', 'Login Successfully', 'success');
         history.push('/');

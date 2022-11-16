@@ -37,7 +37,9 @@
     "resourceName": "s3admina69921c8",
     "authSelections": "identityPoolAndUserPool",
     "useDefault": "default",
-    "userPoolGroupList": [],
+    "userPoolGroupList": [
+      "Test"
+    ],
     "serviceName": "Cognito",
     "usernameCaseSensitive": false,
     "useEnabledMfas": true,
@@ -55,6 +57,6 @@
     },
     "breakCircularDependency": true,
     "dependsOn": [],
-    "adminQueryGroup": "Admin"
+    "adminQueryGroup": "Test"
   }
 }

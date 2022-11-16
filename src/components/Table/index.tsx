@@ -92,6 +92,7 @@ interface ITableProps {
   tableColumns: IColumn[];
   tableData: any[];
   loading?: boolean;
+  key?: string;
   onRowClick?: (row: any) => void;
   showCheckBoxSelection?: boolean;
   selectedRows?: string[];
@@ -102,6 +103,7 @@ const CommonTable: React.FC<ITableProps> = ({
   tableColumns,
   tableData,
   onRowClick,
+  key = 'id',
   showCheckBoxSelection = false,
   selectedRows = [],
   setSelectedRows = () => {}
@@ -169,6 +171,8 @@ const CommonTable: React.FC<ITableProps> = ({
   useEffect(() => {
       initTable();
   }, []);
+  
+  console.log(tableData, key)
 
   return (
       <>
@@ -202,8 +206,8 @@ const CommonTable: React.FC<ITableProps> = ({
                         {showCheckBoxSelection && (
                           <CheckboxTableBodyCell align="left">
                             <Checkbox
-                                checked={selectedRows.includes(row.id || row.email)}
-                                onChange={() => handleRowSelection(row.id || row.email, selectedRows.includes(row.id || row.email))}
+                                checked={selectedRows.includes(row["key"])}
+                                onChange={() => handleRowSelection(row["key"], selectedRows.includes(row["key"]))}
                             />
                           </CheckboxTableBodyCell>
                         )}

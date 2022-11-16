@@ -17,6 +17,9 @@
       },
       "auth": {
         "s3admina69921c8": {}
+      },
+      "function": {
+        "AdminQueriesbcb39ff6": {}
       }
     }
   }

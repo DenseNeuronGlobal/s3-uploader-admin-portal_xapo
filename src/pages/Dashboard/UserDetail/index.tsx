@@ -1,7 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {useHistory, useParams} from 'react-router-dom';
 import {Box, Button, Card, Grid, TextField, styled, CircularProgress} from '@material-ui/core';
+import {Auth, API, Storage} from 'aws-amplify';
 import AWS from 'aws-sdk';
+import {IAttribute} from '../../../interfaces/user.interface';
 import {Toast} from '../../../utils/notifications';
 import {useInput} from '../../../utils/forms';
 import {COGNITO} from '../../../configs/aws';
@@ -46,23 +48,36 @@ const UserDetail: React.FC = () => {
   const {value: email, bind: bindEmail, setValue: setEmail} = useInput('');
   const {value: password, bind: bindPassword} = useInput('');
   const {value: confirmPassword, bind: bindConfirmPassword} = useInput('');
+  
+  const getUser = async (username: string) => {
+    const apiName = 'AdminQueries';
+    const path = '/getUser';
+    const myInit = {
+      queryStringParameters: {
+        username
+      },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
+      }
+    }
+    
+    try {
+      const data = await API.get(apiName, path, myInit);
+      setName(data.Username);
+
+      if (data.UserAttributes) {
+        setEmail(data.UserAttributes.find((attr: IAttribute) => attr.Name === 'email')?.Value || '');
+      }
+    } catch (e: any) {
+      console.log("error", e.message);
+    }
+  }
 
   useEffect(() => {
     if (username && username !== 'new') {
       setIsEdit(true);
-      const cognitoParams = {
-        UserPoolId: COGNITO.USER_POOL_ID,
-        Username: username
-      };
-      cognito.adminGetUser(cognitoParams, (err, data) => {
-        if (data) {
-          setName(data.Username);
-
-          if (data.UserAttributes) {
-            setEmail(data.UserAttributes.find(attr => attr.Name === 'email')?.Value || '');
-          }
-        }
-      });
+      getUser(username);
     }
   }, [username]);
 
@@ -75,38 +90,16 @@ const UserDetail: React.FC = () => {
       return;
     }
     try {
-      const cognito = new AWS.CognitoIdentityServiceProvider();
-
-      const cognitoParams = {
-        UserPoolId: COGNITO.USER_POOL_ID,
-        Username: name,
-        TemporaryPassword: confirmPassword,
-        UserAttributes: [
-          {
-            Name: 'email',
-            Value: email
-          },
-          {
-            Name: 'email_verified',
-            Value: 'true'
-          }
-        ]
-      };
-
-      await cognito.adminCreateUser(cognitoParams, (err, data) => {
-        if (err) {
-          Toast('Error!!', err.message, 'danger');
-        } else {
-          const params = {
-            Bucket: COGNITO.S3_BUCKET,
-            Key: `${name}/`
-          };
-
-          s3.putObject(params).promise();
-          Toast('Success!!', 'User created successfully', 'success');
-          history.push('/users');
+      const params = {
+        username: name,
+        password: confirmPassword,
+        attributes: {
+          email,
         }
-      });
+      }
+      await Auth.signUp(params);
+      Toast('Success!!', 'User created successfully', 'success');
+      history.push('/users');
     } catch (error: any) {
       if (error) {
         Toast('Error!!', error.message, 'danger');

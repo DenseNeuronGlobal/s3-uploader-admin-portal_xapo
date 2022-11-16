@@ -2,7 +2,6 @@ import React, {useState, useEffect, SyntheticEvent} from 'react';
 import {Box, Button, styled} from '@material-ui/core';
 import {saveAs} from "file-saver";
 import {COGNITO} from '../../../configs/aws';
-import AWS from 'aws-sdk';
 import {Storage, Auth, API} from 'aws-amplify';
 import CommonTable from '../../../components/Table';
 import CommonBreadCrumb from '../../../components/BreadCrumbs';
@@ -11,10 +10,10 @@ import {DeleteOutline} from "@material-ui/icons";
 import SearchField from "../../../components/Search";
 import {useInput} from "../../../utils/forms";
 import {Toast} from "../../../utils/notifications";
-import {IUserAttributes, IUserSimple} from "../../../interfaces/user.interface";
+import {IUserAttributes, IUserSimple, IAttribute, IUserIdentity} from "../../../interfaces/user.interface";
 import {AttributeType} from "aws-sdk/clients/cognitoidentityserviceprovider";
 
-const FolderNameCell: any = styled(Box)({
+const FileNameCell: any = styled(Box)({
   cursor: 'pointer',
   color: '#783326',
   fontSize: '14px',
@@ -37,227 +36,156 @@ const RemoveButton: any = styled(Button)({
 
 interface IFile {
   id: string;
-  Key: string;
-  LastModified: Date;
-  Size: number;
+  key: string;
+  lastModified: Date;
+  size: number;
   allowDownload?: boolean;
 }
 
+const apiName = 'AdminQueries';
+
 const Files = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [userIdentities, setUserIdentities] = useState<any>({});
   const [files, setFiles] = useState<IFile[]>([]);
-  const [depth, setDepth] = useState<number>(1);
+  const [selectedUserIdentityId, setSelectedUserIdentityId] = useState<string>('');
   const [paths, setPaths] = useState<IPath[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
   const {value: search, bind: bindSearch, reset: resetSearch} = useInput('');
-  const cognito = new AWS.CognitoIdentityServiceProvider();
-  const s3 = new AWS.S3();
 
   const columns: IColumn[] = [
     {
       title: 'Name',
-      key: 'Key',
+      key: 'key',
       render: (row: IRow) => (
-        <FolderNameCell onClick={() => onRowClick(row)}>
-          {row.Key}
-        </FolderNameCell>
+        <FileNameCell onClick={() => onRowClick(row)}>
+          {row.key}
+        </FileNameCell>
       )
     },
     {
       title: 'Last modified',
-      key: 'LastModified',
-      render: (row: IRow) => (row.LastModified as Date)?.toDateString()
+      key: 'lastModified',
+      render: (row: IRow) => row.lastModified ? new Date(row.lastModified).toDateString() : '-'
     },
     {
       title: 'Size',
-      key: 'Size'
+      key: 'size'
     }
   ];
-  
-  const fetchUserList = async () => {
-    let apiName = 'AdminQueries';
-    let path = '/listUsers';
-    console.log('token', (await Auth.currentSession()).getAccessToken().getJwtToken())
-    let myInit = {
-      queryStringParameters: {
-        "limit": 5,
-        // "token": nextToken
-      },
-      headers: {
-        'Content-Type' : 'application/json',
-        Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
-      }
-    }
-    try {
-      const users = await API.get(apiName, path, myInit);
-      console.log('users', users);
-    } catch (e: any) {
-      console.log(e);
-    }
-  }
 
-  const fetchUserIdentities = (searchValue: string = ''): void => {
+  const fetchUserIdentities = async (searchValue: string = ''): Promise<void> => {
     setLoading(true);
-
-    let params: any = {
-      UserPoolId: COGNITO.USER_POOL_ID,
-    };
-
-    if (searchValue) {
-      params = {
-        ...params,
-        Filter: `username ^= \"${searchValue}\"`
+    const path = '/listUsers';
+    try {
+      const myInit = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
+        }
       }
-    }
-
-    cognito.listUsers(params, (err, data) => {
-      if (err) {
-        return;
-      } else if (data.Users) {
-        const identities: any = {};
-        for(let i = 0; i < data.Users.length ; i++) {
-          const user = data.Users[i];
-          if (user.Attributes) {
-            const identity = user.Attributes.find((attribute) => attribute.Name === "custom:identityId");
-            if (identity && identity.Value) {
-              identities[identity.Value] = user.Username;
-            }
+      const data = await API.get(apiName, path, myInit);
+      const contents: IFile[] = [];
+      for(let i = 0; i < data.Users.length ; i++) {
+        const user = data.Users[i];
+        if (user.Attributes) {
+          const identity: IAttribute = user.Attributes.find((attribute: IAttribute) => attribute.Name === "custom:identityId");
+          if (identity && identity.Value) {
+            contents.push({
+              id: identity.Value,
+              key: user.Username,
+              lastModified: user.UserLastModifiedDate,
+              size: 0,
+            });
           }
         }
-        setUserIdentities(identities);
-        if (Object.entries(identities).length > 0) {
-          fetchFolders("protected/", 1, identities);
-        } else {
-          setFiles([]);
-          setLoading(false);
-        }
       }
-    });
+      setFiles(contents);
+      setLoading(false);
+    } catch (e: any) {
+      console.log("error", e.message);
+    }
   };
 
-  const fetchFolders = (prefix: string = '', newDepth: number = 1, identities: any = userIdentities): void => {
+  const fetchFiles = async (identityId: string = '', searchValue: string = ''): Promise<void> => {
     setSelectedRows([]);
-    if (!loading) {
-      setLoading(true);
+    setLoading(true);
+    try {
+      const contents = await Storage.list(searchValue, {
+        pageSize: 'ALL',
+        identityId
+      });
+      setFiles(contents.map((item: IFile) => ({
+        ...item,
+        allowDownload: true
+      })));
+    } catch (e: any) {
+      console.log("error", e.message);
     }
-    if (depth !== newDepth) {
-      setDepth(newDepth);
-    }
-
-    const params = {
-      Bucket: COGNITO.S3_BUCKET,
-      StartAfter: prefix,
-      Prefix: prefix
-    };
-
-    s3.listObjectsV2(params, (err, data) => {
-      if (err) {
-        console.log("error from fetching object", err);
-      } else {
-        const contents: { [key: string]: IFile } = {};
-        // @ts-ignore
-        for (let i = 0; i < data.Contents.length; i++) {
-          // @ts-ignore
-          const content: IFile = data.Contents[i];
-          const filePath = content.Key.split('/').filter(key => key);
-          const fileDepth = filePath.length - 1;
-          const key = filePath.slice(0, newDepth + 1).join('/');
-          if (newDepth === 1 && !identities[filePath[newDepth]]) {
-            continue;
-          }
-          if (key in contents) {
-            contents[key].Size += content.Size;
-            continue;
-          }
-          contents[key] = {
-            ...content,
-            Key: newDepth === 1 ? identities[filePath[newDepth]] : filePath[newDepth],
-            id: key,
-            allowDownload: fileDepth === newDepth && !content.Key.endsWith('/')
-          };
-        }
-        setFiles(Object.values(contents));
-      }
-      setLoading(false);
-    });
+    setLoading(false);
   };
 
-  const downloadObject = (key: string, fileName: string): void => {
-    const params = {
-      Bucket: COGNITO.S3_BUCKET,
-      Key: key,
-    };
-    s3.getObject(params, (err, data) => {
-      if (err) {
-        console.log("error from downloading object", err);
-      } else {
-        // @ts-ignore
-        const object = new Blob([data.Body], {
-          type: data.ContentType,
-        });
-        saveAs(object, fileName);
-      }
-    });
+  const downloadObject = async (identityId: string, fileName: string): Promise<void> => {
+    try {
+      const contents: any = await Storage.get(fileName, {
+        identityId,
+        download: true
+      });
+      const file = new Blob([contents.Body], {
+        type: contents.ContentType,
+      });
+      saveAs(file, fileName);
+    } catch (e: any) {
+      console.log("error", e.message);
+    }
   };
 
-  const deleteObjects = () => {
-    const params = {
-      Bucket: COGNITO.S3_BUCKET,
-      Delete: {
-        Objects: selectedRows.map(rowId => ({
-          Key: rowId
-        }))
-      }
-    };
-
-    s3.deleteObjects(params, (err, data) => {
-      if (err) {
-        console.log(err);
-      } else {
-        fetchUserIdentities();
-      }
-      setLoading(false);
-    });
-
+  const deleteObjects = async () => {
+    for (let i = 0; i < selectedRows.length ; i++) {
+      const rowId = selectedRows[i];
+      await Storage.remove(rowId, {
+        identityId: selectedUserIdentityId
+      });
+    }
+    fetchFiles(selectedUserIdentityId, search);
     setSelectedRows([]);
   };
 
   const handleSearchChange = (e: SyntheticEvent) => {
     // @ts-ignore
     const value = e.target.value;
-    if (depth === 1) {
-      fetchUserIdentities(value);
+    if (selectedUserIdentityId) {
+      fetchFiles(selectedUserIdentityId, value);
     } else {
-      const searchValue = paths[paths.length - 1].title;
-      fetchFolders(`protected/${searchValue}/${value}`, depth);
+      fetchUserIdentities(value);
     }
     bindSearch.onChange(e);
   };
 
-  const onRowClick = (row: IRow, newDepth: number = depth): void => {
+  const onRowClick = (row: IRow): void => {
+    const rowId = row.id as string;
+    const rowKey = row.key as string;
     if (row.allowDownload) {
-      downloadObject(row.id as string, row.Key as string);
+      downloadObject(rowId, rowKey);
       return;
     }
     resetSearch();
-    fetchFolders(row.id as string, newDepth + 1);
+    setSelectedUserIdentityId(rowId);
+    fetchFiles(rowId);
     setPaths(prev => [
       ...prev,
       {
-        title: row.Key as string,
+        title: rowKey,
         onClick: () => {
           setPaths(prev);
-          onRowClick(row, newDepth);
+          onRowClick(row);
         }
       }
     ]);
   };
 
   useEffect(() => {
-    // fetchUserIdentities();
-    fetchUserList();
+    fetchUserIdentities();
   }, []);
 
   return (
@@ -277,13 +205,14 @@ const Files = () => {
       />
       <ActionWrapper>
         <SearchField placeholder={"Search Files"} {...bindSearch} onChange={handleSearchChange} />
-        <RemoveButton color="inherit" variant="outlined" size="medium" disabled={selectedRows.length === 0} onClick={deleteObjects} className={"amplify-button--error"}>
+        <RemoveButton color="inherit" variant="outlined" size="medium" disabled={!selectedUserIdentityId || selectedRows.length === 0} onClick={deleteObjects} className={"amplify-button--error"}>
           <DeleteOutline fontSize={"small"} />
           Delete
         </RemoveButton>
       </ActionWrapper>
       <CommonTable
         loading={loading}
+        key="key"
         tableColumns={columns}
         tableData={files}
         showCheckBoxSelection

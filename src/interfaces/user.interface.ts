@@ -18,3 +18,17 @@ export interface IUserSimple {
 export interface IUserAttributes {
   [key: string]: string | boolean | undefined;
 }
+
+export interface IAttribute {
+  Name: string;
+  Value: string;
+}
+
+export interface IUserResponse extends IUserSimple {
+  Attributes: IAttribute[];
+}
+
+export interface IUserIdentity {
+  identityId: string;
+  username: string;
+}
