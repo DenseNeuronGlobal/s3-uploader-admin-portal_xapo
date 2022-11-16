@@ -1,12 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {useHistory, useParams} from 'react-router-dom';
 import {Box, Button, Card, Grid, TextField, styled, CircularProgress} from '@material-ui/core';
-import {Auth, API, Storage} from 'aws-amplify';
-import AWS from 'aws-sdk';
+import {Auth, API} from 'aws-amplify';
 import {IAttribute} from '../../../interfaces/user.interface';
 import {Toast} from '../../../utils/notifications';
 import {useInput} from '../../../utils/forms';
-import {COGNITO} from '../../../configs/aws';
 import {Add, DeleteOutline, EditOutlined} from "@material-ui/icons";
 import CommonBreadCrumb from "../../../components/BreadCrumbs";
 import {IPath} from "../../../interfaces/global.interface";
@@ -35,68 +33,59 @@ const defaultPath: IPath = {
   to: '/users'
 };
 
+const apiName: string = 'AdminQueries';
+
 const UserDetail: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [isUserEnabled, setIsUserEnabled] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-
   const history = useHistory();
   const {username} = useParams<{username: string}>();
-  const cognito = new AWS.CognitoIdentityServiceProvider();
-  const s3 = new AWS.S3();
-
   const {value: name, bind: bindName, setValue: setName} = useInput('');
   const {value: email, bind: bindEmail, setValue: setEmail} = useInput('');
   const {value: password, bind: bindPassword} = useInput('');
   const {value: confirmPassword, bind: bindConfirmPassword} = useInput('');
   
   const getUser = async (username: string) => {
-    const apiName = 'AdminQueries';
-    const path = '/getUser';
-    const myInit = {
-      queryStringParameters: {
-        username
-      },
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
-      }
-    }
-    
+    const path: string = '/getUser';
     try {
-      const data = await API.get(apiName, path, myInit);
-      setName(data.Username);
-
-      if (data.UserAttributes) {
-        setEmail(data.UserAttributes.find((attr: IAttribute) => attr.Name === 'email')?.Value || '');
+      const myInit = {
+        queryStringParameters: {
+          username
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
+        }
+      };
+      const user = await API.get(apiName, path, myInit);
+      setName(user.Username);
+      setIsUserEnabled(user.Enabled);
+      if (user.UserAttributes) {
+        setEmail(user.UserAttributes.find((attr: IAttribute) => attr.Name === 'email')?.Value || '');
       }
-    } catch (e: any) {
-      console.log("error", e.message);
+    } catch (error: any) {
+      if (error) {
+        Toast('Error!!', error.message, 'danger');
+      }
     }
   }
 
-  useEffect(() => {
-    if (username && username !== 'new') {
-      setIsEdit(true);
-      getUser(username);
-    }
-  }, [username]);
-
-  const handleSignUp = async (e: React.SyntheticEvent<Element, Event>) => {
+  const handleSignUp = async (e: React.SyntheticEvent<Element, Event>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
-
     if (password !== confirmPassword) {
       Toast('Error!!', 'Password and Confirm Password should be same', 'danger');
       return;
     }
-    try {
-      const params = {
-        username: name,
-        password: confirmPassword,
-        attributes: {
-          email,
-        }
+    const params = {
+      username: name,
+      password: confirmPassword,
+      attributes: {
+        email,
       }
+    };
+    try {
       await Auth.signUp(params);
       Toast('Success!!', 'User created successfully', 'success');
       history.push('/users');
@@ -108,26 +97,34 @@ const UserDetail: React.FC = () => {
     setLoading(false);
   };
 
-  const handleRemove = () => {
-    const cognitoParams = {
-      UserPoolId: COGNITO.USER_POOL_ID,
-      Username: username
-    };
-    const cognito = new AWS.CognitoIdentityServiceProvider();
-    cognito.adminDeleteUser(cognitoParams, (err, data) => {
-      if (err) {
-        return;
-      }
-
-      const params = {
-        Bucket: COGNITO.S3_BUCKET,
-        Key: `${username}/`
+  const handleDisableUser = async (): Promise<void> => {
+    const path: string = '/disableUser';
+    try {
+      const myInit = {
+        body: {
+          username
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
+        }
       };
-
-      s3.deleteObject(params).promise();
+      await API.post(apiName, path, myInit);
+      Toast('Success!!', 'User disabled successfully', 'success');
       history.push('/users');
-    });
+    } catch (error: any) {
+      if (error) {
+        Toast('Error!!', error.message, 'danger');
+      }
+    }
   };
+
+  useEffect(() => {
+    if (username && username !== 'new') {
+      setIsEdit(true);
+      getUser(username);
+    }
+  }, [username]);
 
   return (
     <>
@@ -135,7 +132,7 @@ const UserDetail: React.FC = () => {
         paths={[
           defaultPath,
           {
-            title: username
+            title: isEdit ? username : "Add User"
           }
         ]}
       />
@@ -165,12 +162,12 @@ const UserDetail: React.FC = () => {
 
           <ActionFooter>
             {isEdit && (
-              <ActionButton variant="outlined" color="error" size="medium" onClick={handleRemove} disabled={loading} className={"amplify-button--error"}>
+              <ActionButton variant="outlined" color="error" size="medium" onClick={handleDisableUser} disabled={!isUserEnabled || loading} className={"amplify-button--error"}>
                 <DeleteOutline fontSize={"small"} />
-                Delete
+                Disable
               </ActionButton>
             )}
-            <ActionButton variant="outlined" color="primary" size="medium" type="submit" disabled={loading} className={"amplify-button"}>
+            <ActionButton variant="outlined" color="primary" size="medium" type="submit" disabled={isEdit || loading} className={"amplify-button"}>
               {loading && <CircularProgress size={20} style={{marginRight: 20}} />}
               {isEdit ? (
                   <>

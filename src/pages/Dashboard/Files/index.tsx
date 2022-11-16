@@ -1,7 +1,6 @@
 import React, {useState, useEffect, SyntheticEvent} from 'react';
 import {Box, Button, styled} from '@material-ui/core';
 import {saveAs} from "file-saver";
-import {COGNITO} from '../../../configs/aws';
 import {Storage, Auth, API} from 'aws-amplify';
 import CommonTable from '../../../components/Table';
 import CommonBreadCrumb from '../../../components/BreadCrumbs';
@@ -10,8 +9,7 @@ import {DeleteOutline} from "@material-ui/icons";
 import SearchField from "../../../components/Search";
 import {useInput} from "../../../utils/forms";
 import {Toast} from "../../../utils/notifications";
-import {IUserAttributes, IUserSimple, IAttribute, IUserIdentity} from "../../../interfaces/user.interface";
-import {AttributeType} from "aws-sdk/clients/cognitoidentityserviceprovider";
+import {IAttribute} from "../../../interfaces/user.interface";
 
 const FileNameCell: any = styled(Box)({
   cursor: 'pointer',
@@ -50,9 +48,7 @@ const Files = () => {
   const [selectedUserIdentityId, setSelectedUserIdentityId] = useState<string>('');
   const [paths, setPaths] = useState<IPath[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
-
   const {value: search, bind: bindSearch, reset: resetSearch} = useInput('');
-
   const columns: IColumn[] = [
     {
       title: 'Name',
@@ -88,7 +84,7 @@ const Files = () => {
       const contents: IFile[] = [];
       for(let i = 0; i < data.Users.length ; i++) {
         const user = data.Users[i];
-        if (user.Attributes) {
+        if (user.Username.startsWith(searchValue) && user.Attributes) {
           const identity: IAttribute = user.Attributes.find((attribute: IAttribute) => attribute.Name === "custom:identityId");
           if (identity && identity.Value) {
             contents.push({
@@ -102,8 +98,10 @@ const Files = () => {
       }
       setFiles(contents);
       setLoading(false);
-    } catch (e: any) {
-      console.log("error", e.message);
+    } catch (error: any) {
+      if (error) {
+        Toast('Error!!', error.message, 'danger');
+      }
     }
   };
 
@@ -117,10 +115,13 @@ const Files = () => {
       });
       setFiles(contents.map((item: IFile) => ({
         ...item,
+        id: identityId,
         allowDownload: true
       })));
-    } catch (e: any) {
-      console.log("error", e.message);
+    } catch (error: any) {
+      if (error) {
+        Toast('Error!!', error.message, 'danger');
+      }
     }
     setLoading(false);
   };
@@ -135,20 +136,30 @@ const Files = () => {
         type: contents.ContentType,
       });
       saveAs(file, fileName);
-    } catch (e: any) {
-      console.log("error", e.message);
+      Toast('Success!!', 'File downloaded successfully', 'success');
+    } catch (error: any) {
+      if (error) {
+        Toast('Error!!', error.message, 'danger');
+      }
     }
   };
 
   const deleteObjects = async () => {
-    for (let i = 0; i < selectedRows.length ; i++) {
-      const rowId = selectedRows[i];
-      await Storage.remove(rowId, {
-        identityId: selectedUserIdentityId
-      });
+    try {
+      for (let i = 0; i < selectedRows.length ; i++) {
+        const fileName = selectedRows[i];
+        await Storage.remove(fileName, {
+          identityId: selectedUserIdentityId
+        });
+      }
+      Toast('Success!!', 'File deleted successfully', 'success');
+      fetchFiles(selectedUserIdentityId, search);
+      setSelectedRows([]);
+    } catch (error: any) {
+      if (error) {
+        Toast('Error!!', error.message, 'danger');
+      }
     }
-    fetchFiles(selectedUserIdentityId, search);
-    setSelectedRows([]);
   };
 
   const handleSearchChange = (e: SyntheticEvent) => {
@@ -212,7 +223,7 @@ const Files = () => {
       </ActionWrapper>
       <CommonTable
         loading={loading}
-        key="key"
+        rowKey="key"
         tableColumns={columns}
         tableData={files}
         showCheckBoxSelection

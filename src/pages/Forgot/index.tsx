@@ -46,9 +46,7 @@ const BackToSignInLink: any = styled(Link)({
 const ResetPassword: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [sendCode, setSendCode] = useState<boolean>(false);
-
   const history = useHistory();
-
   const {value: email, bind: bindEmail} = useInput('');
   const {value: code, bind: bindCode} = useInput('');
   const {value: password, bind: bindPassword} = useInput('');

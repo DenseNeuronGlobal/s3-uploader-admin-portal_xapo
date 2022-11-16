@@ -2,8 +2,6 @@ import React, {useState} from 'react';
 import {styled, Theme} from '@material-ui/core/styles';
 import {Box, ButtonBase, Typography, IconButton} from '@material-ui/core';
 import {NavLink, useHistory} from 'react-router-dom';
-import {Auth} from 'aws-amplify';
-import {Toast} from '../../../utils/notifications';
 
 const Drawer: any = styled(Box)(({theme, collapsed}: {theme: Theme; collapsed: boolean}) => ({
   width: collapsed ? '40px' : '256px',
@@ -64,30 +62,9 @@ const NavLinks = [
   }
 ];
 
-const LogoutButton: any = styled(ButtonBase)(({theme, activated}: {theme: Theme; activated: boolean}) => ({
-  margin: '12px 0',
-  marginTop: 'auto',
-  backgroundColor: 'white',
-  fontSize: '16px',
-  color: activated ? '#ec7211' : '#000',
-  textDecoration: 'none'
-}));
-
 const Sidebar: React.FC = () => {
   const history = useHistory();
   const [collapsed, setCollapsed] = useState(false);
-
-  const handleLogout = async () => {
-    try {
-      await Auth.signOut();
-      Toast('Success!!', 'Logged out successfully!', 'success');
-      history.push('/signin');
-    } catch (error: any) {
-      if (error) {
-        Toast('Error!!', error.message, 'danger');
-      }
-    }
-  };
 
   return (
     <Drawer collapsed={collapsed}>

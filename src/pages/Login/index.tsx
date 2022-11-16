@@ -5,7 +5,6 @@ import {Auth} from 'aws-amplify';
 import {useInput} from '../../utils/forms';
 import {Toast} from '../../utils/notifications';
 import InputField from "../../components/Field";
-import {IUserSimple} from "../../interfaces/user.interface";
 
 const Page: any = styled(Box)({
   margin: '0 auto',
@@ -54,9 +53,6 @@ const Signin: FC = () => {
     setLoading(true);
     try {
       const userDetail = await Auth.signIn(email, password);
-      console.log(userDetail);
-      const user = await Auth.currentUserCredentials();
-      console.log('user', user);
       if (userDetail.signInUserSession.accessToken.payload["cognito:groups"].includes("Admin")) {
         Toast('Success!!', 'Login Successfully', 'success');
         history.push('/');

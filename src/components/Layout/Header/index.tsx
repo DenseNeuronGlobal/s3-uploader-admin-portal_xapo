@@ -1,6 +1,6 @@
 import React, {FC, useState} from 'react';
 import {styled} from '@material-ui/core/styles';
-import {Avatar, Box, Button, Divider, Popover, Typography} from '@material-ui/core';
+import {Avatar, Box, Popover, Typography} from '@material-ui/core';
 import {Auth} from 'aws-amplify';
 import {useHistory} from 'react-router-dom';
 import {Toast} from '../../../utils/notifications';

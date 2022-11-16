@@ -46,11 +46,8 @@ const defaultPath: IPath = {
 const Users = () => {
   const [users, setUsers] = useState<IUserSimple[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
-
   const {value: search, bind: bindSearch} = useInput('');
-
   const history = useHistory();
-
   const columns = [
     {
       title: 'Id',
@@ -98,7 +95,7 @@ const Users = () => {
     }
   ];
 
-  const fetchUsers = async (extra: any = {}) => {
+  const fetchUsers = async (searchValue: string = '') => {
     const apiName = 'AdminQueries';
     const path = '/listUsers';
     const myInit = {
@@ -125,26 +122,25 @@ const Users = () => {
             ...user,
             ...attri
           } as IUserSimple;
-        })
+        }).filter((user: IUserSimple) => user.Username.startsWith(searchValue))
       );
-    } catch (e: any) {
-      console.log("error", e.message);
+    } catch (error: any) {
+      if (error) {
+        Toast('Error!!', error.message, 'danger');
+      }
     }
   };
 
   useEffect(() => {
     if (search) {
-      const params = {
-        Filter: `username ^= \"${search}\"`
-      }
-      fetchUsers(params);
+      fetchUsers(search);
     } else {
       fetchUsers();
     }
   }, [search]);
 
-  const handleDeleteObjects = () => {
-
+  const handleDeleteUsers = () => {
+    // todo: to be implemented
   };
 
   const onRowClick = (row: string): void => {
@@ -159,9 +155,9 @@ const Users = () => {
           <SearchField placeholder={"Search Users"} {...bindSearch} />
         </Box>
         <Box>
-          <RemoveButton color="inherit" variant="outlined" size={"medium"} disabled={selectedRows.length === 0} onClick={handleDeleteObjects} className={"amplify-button--error"}>
+          <RemoveButton color="inherit" variant="outlined" size={"medium"} disabled={selectedRows.length === 0} onClick={handleDeleteUsers} className={"amplify-button--error"}>
             <DeleteOutline fontSize={"small"} />
-            Delete
+            Disable
           </RemoveButton>
           <AddButton color="primary" variant="outlined" size={"medium"} onClick={() => history.push('/users/new')} className={"amplify-button"}>
             <Add fontSize={"small"} />
@@ -171,7 +167,7 @@ const Users = () => {
       </ActionWrapper>
       <CommonTable
         showCheckBoxSelection
-        key="email"
+        rowKey="email"
         tableColumns={columns}
         tableData={users}
         selectedRows={selectedRows}
