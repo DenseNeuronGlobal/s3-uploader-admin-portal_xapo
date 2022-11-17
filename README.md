@@ -24,9 +24,10 @@ The installation instructions assume that you have already installed the S3 Uplo
 git clone https://github.com/DenseNeuronGlobal/s3-uploader-admin-portal_xapo.git
 ```
 2. cd into the GitHub Project folder:
-``sh
+```sh
 cd s3-uploader-admin-portal_xapo
-``
+```
+
 3. Perform Amplify Init
 ```sh
 amplify init
