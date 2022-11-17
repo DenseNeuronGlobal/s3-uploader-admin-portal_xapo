@@ -15,13 +15,7 @@ Amplify.configure({
   aws_user_pools_web_client_id: COGNITO.APP_CLIENT_ID,
   aws_user_files_s3_bucket: COGNITO.S3_BUCKET,
   aws_user_files_s3_bucket_region: COGNITO.REGION,
-  aws_cloud_logic_custom: [
-    {
-      name: "AdminQueries",
-      endpoint: "https://t93zgvne99.execute-api.eu-west-2.amazonaws.com/dev",
-      region: "eu-west-2"
-    },
-  ]
+  aws_cloud_logic_custom: COGNITO.CUSTOM_LOGIC
 });
 
 Storage.configure({ level: 'protected' });
