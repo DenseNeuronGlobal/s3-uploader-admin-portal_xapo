@@ -60,6 +60,7 @@ aws_project_region (Set your REGION to this value)
 aws_cognito_identity_pool_id (Set your IDENTITY_POOL_ID to this value)
 aws_user_pools_id (Set your USER_POOL_ID to this value)
 aws_content_delivery_bucket (Set your S3_BUCKET to this value)
+aws_userfiles_s3_bucket (Set your S3_BUCKET to this value)
 
 Once you have completed this. You will need to navigate to your AWS Cognito User Pool for your S3 Uploader, as created in step 5.
 
