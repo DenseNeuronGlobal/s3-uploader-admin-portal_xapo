@@ -7,6 +7,7 @@ export interface IUser {
 
 export interface IUserSimple {
   Username: string;
+  name: string;
   email: string;
   email_verified: string;
   Enabled: boolean;
@@ -24,8 +25,12 @@ export interface IAttribute {
   Value: string;
 }
 
-export interface IUserResponse extends IUserSimple {
+export interface IUsersResponse extends IUserSimple {
   Attributes: IAttribute[];
+}
+
+export interface IUserResponse extends IUserSimple {
+  UserAttributes: IAttribute[];
 }
 
 export interface IUserIdentity {

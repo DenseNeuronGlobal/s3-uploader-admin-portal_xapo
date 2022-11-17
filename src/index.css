@@ -80,11 +80,13 @@ iframe {
 
 .rounded-button,
 .amplify-button,
+.amplify-button--success,
 .amplify-button--error {
   border-radius: 15px !important;
   line-height: 24px !important;
 }
 .amplify-button,
+.amplify-button--success,
 .amplify-button--error {
   text-transform: initial !important;
 }
@@ -96,6 +98,17 @@ iframe {
 
 .amplify-button:hover {
   background-color: #783326 !important;
+  color: #ffffff !important;
+}
+
+.amplify-button--success {
+  background-color: transparent !important;
+  border-color: #4bb543 !important;
+  color: #4bb543 !important;
+}
+
+.amplify-button--success:hover {
+  background-color: #4bb543 !important;
   color: #ffffff !important;
 }
 
@@ -111,6 +124,7 @@ iframe {
 }
 
 .amplify-button.Mui-disabled,
+.amplify-button--success.Mui-disabled,
 .amplify-button--error.Mui-disabled {
   border-color: #cccccc !important;
   color: #888888 !important;

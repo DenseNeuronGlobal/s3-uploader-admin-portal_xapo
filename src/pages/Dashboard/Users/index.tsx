@@ -1,21 +1,17 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useMemo} from 'react';
 import {useHistory} from 'react-router-dom';
 import {Auth, API} from 'aws-amplify';
 import {Box, Button, styled} from '@material-ui/core';
 import CommonTable from '../../../components/Table';
 import {Toast} from '../../../utils/notifications';
-import {IUserAttributes, IUserSimple, IUserResponse, IAttribute} from '../../../interfaces/user.interface';
+import {IUserAttributes, IUserSimple, IUsersResponse, IAttribute} from '../../../interfaces/user.interface';
 import CommonBreadCrumb from '../../../components/BreadCrumbs';
 import {IPath, IRow} from '../../../interfaces/global.interface';
-import {Add, DeleteOutline} from "@material-ui/icons";
+import {Add, DeleteOutline, DoneOutlined} from "@material-ui/icons";
 import SearchField from "../../../components/Search";
 import {useInput} from "../../../utils/forms";
 
-const AddButton: any = styled(Button)({
-  marginLeft: '10px',
-});
-
-const RemoveButton: any = styled(Button)({
+const ActionButton: any = styled(Button)({
   marginLeft: '10px',
 });
 
@@ -43,9 +39,23 @@ const defaultPath: IPath = {
   to: '/users'
 };
 
+const apiName: string = 'AdminQueries';
+const rowKey: string = "Username";
+
 const Users = () => {
+  const [loading, setLoading] = useState<boolean>(false);
   const [users, setUsers] = useState<IUserSimple[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const selectedEnabledUsers: string[] = useMemo(() => {
+    return users
+      .filter((user: IUserSimple) => user.Enabled && selectedRows.includes(user.Username))
+      .map((user: IUserSimple) => user.Username);
+  }, [users, selectedRows]);
+  const selectedDisabledUsers: string[] = useMemo(() => {
+    return users
+      .filter((user: IUserSimple) => !user.Enabled && selectedRows.includes(user.Username))
+      .map((user: IUserSimple) => user.Username);
+  }, [users, selectedRows]);
   const {value: search, bind: bindSearch} = useInput('');
   const history = useHistory();
   const columns = [
@@ -55,13 +65,18 @@ const Users = () => {
       render: (row: IRow) => row['custom:identityId'] || '-'
     },
     {
-      title: 'Name',
+      title: 'Email',
       key: 'Username',
       render: (row: IRow) => (
-        <UserNameCell onClick={() => onRowClick(row.Username as string)}>
+        <UserNameCell onClick={() => onRowClick(row)}>
           {row.Username}
         </UserNameCell>
       )
+    },
+    {
+      title: 'Name',
+      key: 'name',
+      render: (row: IRow) => row['name'] || '-'
     },
     {
       title: 'Enabled',
@@ -70,10 +85,6 @@ const Users = () => {
     {
       title: 'Account status',
       key: 'UserStatus',
-    },
-    {
-      title: 'Email',
-      key: 'email'
     },
     {
       title: 'Email verified',
@@ -96,8 +107,7 @@ const Users = () => {
   ];
 
   const fetchUsers = async (searchValue: string = '') => {
-    const apiName = 'AdminQueries';
-    const path = '/listUsers';
+    const path: string = '/listUsers';
     const myInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -108,16 +118,16 @@ const Users = () => {
     try {
       const data = await API.get(apiName, path, myInit);
       setUsers(
-        data.Users.map((user: IUserResponse) => {
+        data.Users.map((user: IUsersResponse) => {
           const attri =
-              user.Attributes &&
-              user.Attributes.reduce(
-                  (attributes: IUserAttributes, attribute: IAttribute) => ({
-                    ...attributes,
-                    [attribute.Name]: attribute.Value
-                  }),
-                  {}
-              );
+            user.Attributes &&
+            user.Attributes.reduce(
+              (attributes: IUserAttributes, attribute: IAttribute) => ({
+                ...attributes,
+                [attribute.Name]: attribute.Value
+              }),
+              {}
+            );
           return {
             ...user,
             ...attri
@@ -130,22 +140,79 @@ const Users = () => {
       }
     }
   };
+  
+  const updateUser = async (username: string, path: string, authorization: string): Promise<void> => {
+    const myInit = {
+      body: {
+        username
+      },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: authorization
+      }
+    };
+    await API.post(apiName, path, myInit);
+  };
+  
+  const handleEnableUsers = async (): Promise<void> => {
+    setLoading(true);
+    const path: string = '/enableUser';
+    try {
+      const authorization: string = (await Auth.currentSession()).getAccessToken().getJwtToken();
+      await Promise.all(
+        selectedDisabledUsers.map(async (username) => {
+          await updateUser(username, path, authorization);
+        })
+      );
+      Toast('Success!!', `User${selectedRows.length > 1 ? 's' : ''} enabled successfully`, 'success');
+      setSelectedRows([]);
+      fetchUsers(search);
+    } catch (error: any) {
+      if (error) {
+        Toast('Error!!', error.message, 'danger');
+      }
+    }
+    setLoading(false);
+  };
+
+  const handleDisableUsers = async (): Promise<void> => {
+    setLoading(true);
+    const path: string = '/disableUser';
+    try {
+      const authorization: string = (await Auth.currentSession()).getAccessToken().getJwtToken();
+      await Promise.all(
+        selectedEnabledUsers.map(async (username) => {
+          await updateUser(username, path, authorization);
+        })
+      );
+      Toast('Success!!', `User${selectedRows.length > 1 ? 's' : ''} disabled successfully`, 'success');
+      setSelectedRows([]);
+      fetchUsers(search);
+      history.push('/users');
+    } catch (error: any) {
+      if (error) {
+        Toast('Error!!', error.message, 'danger');
+      }
+    }
+    setLoading(false);
+  };
+  
+  const getRowStyles = (row: IRow): React.CSSProperties => {
+    if (!row.Enabled) {
+      return {
+        background: 'rgba(0, 0, 0, 0.1)'
+      };
+    }
+    return {};
+  };
+
+  const onRowClick = (row: IRow): void => {
+    history.push(`users/${row[rowKey]}`);
+  };
 
   useEffect(() => {
-    if (search) {
-      fetchUsers(search);
-    } else {
-      fetchUsers();
-    }
+    fetchUsers(search);
   }, [search]);
-
-  const handleDeleteUsers = () => {
-    // todo: to be implemented
-  };
-
-  const onRowClick = (row: string): void => {
-    history.push(`users/${row}`);
-  };
 
   return (
     <>
@@ -155,21 +222,26 @@ const Users = () => {
           <SearchField placeholder={"Search Users"} {...bindSearch} />
         </Box>
         <Box>
-          <RemoveButton color="inherit" variant="outlined" size={"medium"} disabled={selectedRows.length === 0} onClick={handleDeleteUsers} className={"amplify-button--error"}>
+          <ActionButton variant="outlined" color="error" size="medium" onClick={handleEnableUsers} disabled={selectedDisabledUsers.length === 0 || loading} className={"amplify-button--success"}>
+            <DoneOutlined fontSize={"small"} />
+            Enable
+          </ActionButton>
+          <ActionButton color="inherit" variant="outlined" size={"medium"} onClick={handleDisableUsers} disabled={selectedEnabledUsers.length === 0 || loading} className={"amplify-button--error"}>
             <DeleteOutline fontSize={"small"} />
             Disable
-          </RemoveButton>
-          <AddButton color="primary" variant="outlined" size={"medium"} onClick={() => history.push('/users/new')} className={"amplify-button"}>
+          </ActionButton>
+          <ActionButton color="primary" variant="outlined" size={"medium"} onClick={() => history.push('/users/new')} disabled={loading} className={"amplify-button"}>
             <Add fontSize={"small"} />
             Add User
-          </AddButton>
+          </ActionButton>
         </Box>
       </ActionWrapper>
       <CommonTable
         showCheckBoxSelection
-        rowKey="email"
+        rowKey={rowKey}
         tableColumns={columns}
         tableData={users}
+        getRowStyles={getRowStyles}
         selectedRows={selectedRows}
         setSelectedRows={setSelectedRows}
       />
