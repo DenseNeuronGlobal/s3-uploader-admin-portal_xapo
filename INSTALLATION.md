@@ -55,11 +55,18 @@ If we go with the option of
 ## Add hosting of Amplify to App
 `amplify hosting add`
 
-Linking with `s3uploader` app
-
 ## Using same environment for Auth, Storage, etc
 - Create `.env` file from `.env.example`
-- Add `aws-exports` variables from `s3uploader` app in created `.env` file
+- Open `aws-export.js` file of s3uploader portal app
+- Open `.env` file of admin portal app
+- Write down the values under `.env`
+  - `REACT_APP_AWS_REGION: ${aws_project_region of aws-export.js}`
+  - `REACT_APP_AWS_USER_POOL_ID: ${aws_user_pools_id of aws-export.js}`
+  - `REACT_APP_AWS_IDENTITY_POOL_ID: ${aws_cognito_identity_pool_id of aws-export.js}`
+  - `REACT_APP_AWS_APP_CLIENT_ID: ${aws_cognito_identity_pool_id of aws-export.js}`
+  - `REACT_APP_AWS_S3_BUCKET: ${aws_user_files_s3_bucket of aws-export.js}
+  - `REACT_APP_AWS_CUSTOM_LOGIC: ${aws_cloud_logic_custom of aws-export.js}`
+- After that, please run `npm run build`
 
 ## Publish
 `amplify publish`
