@@ -4,17 +4,13 @@
 `git clone https://github.com/DenseNeuronGlobal/s3-uploader-admin-portal_xapo.git`
 
 ## Prerequisites
-- `s3uploader` app (check `https://github.com/DenseNeuronGlobal/s3-uploader-ui_xapo.git`)
-- Create a new Cloud9 server
-- Follow up the url to setup and install dependencies
-  https://aws.amazon.com/blogs/storage/allowing-external-users-to-securely-and-directly-upload-files-to-amazon-s3/
-
-## Create a New app under AWS Amplify
-https://prnt.sc/cWHVCoUmO6wn
-On the top right corner,  create a new app and selecte backend
+- Clone and setup `s3uploader` app with amplify env(check `https://github.com/DenseNeuronGlobal/s3-uploader-ui_xapo.git`)
+- Go to "s3-uploader-ui_xapo/src/aws-exports.js" on the Cloud9 server
+- Copy content of this aws-exports.js
 
 ## Install dependencies
-`npm install`
+- Go to the project root, `cd s3-uploader-admin-portal`
+- `npm install` to install all dependencies
 
 ## Setup Amplify Environment
 `amplify init`
