@@ -64,7 +64,7 @@ If we go with the option of
   - `REACT_APP_AWS_USER_POOL_ID: ${aws_user_pools_id of aws-export.js}`
   - `REACT_APP_AWS_IDENTITY_POOL_ID: ${aws_cognito_identity_pool_id of aws-export.js}`
   - `REACT_APP_AWS_APP_CLIENT_ID: ${aws_cognito_identity_pool_id of aws-export.js}`
-  - `REACT_APP_AWS_S3_BUCKET: ${aws_user_files_s3_bucket of aws-export.js}
+  - `REACT_APP_AWS_S3_BUCKET: ${aws_user_files_s3_bucket of aws-export.js}`
   - `REACT_APP_AWS_CUSTOM_LOGIC: ${aws_cloud_logic_custom of aws-export.js}`
 - After that, please run `npm run build`
 
