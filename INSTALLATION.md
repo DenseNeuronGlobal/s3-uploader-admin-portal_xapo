@@ -1,12 +1,13 @@
 # Installation Project
 
-## Clone project
-`git clone https://github.com/DenseNeuronGlobal/s3-uploader-admin-portal_xapo.git`
 
 ## Prerequisites
 - Clone and setup `s3uploader` app with amplify env(check `https://github.com/DenseNeuronGlobal/s3-uploader-ui_xapo.git`)
 - Go to "s3-uploader-ui_xapo/src/aws-exports.js" on the Cloud9 server
 - Copy content of this aws-exports.js
+
+## Clone project
+`git clone https://github.com/DenseNeuronGlobal/s3-uploader-admin-portal_xapo.git`
 
 ## Install dependencies
 - Go to the project root, `cd s3-uploader-admin-portal`
