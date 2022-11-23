@@ -2,20 +2,6 @@
 
 ## Installation instructions
 
-Before starting make sure that you have enabled AdministrationQueries to do this:
-Go to your AWS Cognito and add a new group named "Admin". Then using the following command from that project folder
-```sh
-amplify add auth
-```
-For the question "Do you want to add an admin queries API?" select Yes.
-For the question "Do you want to restrict access to a specific Group" select Yes.
-Select "Admin" from the list.
-
-Now push those settings to AWS.
-```sh
-amplify push
-```
-
 
 The installation instructions assume that you have already installed the S3 Upload Portal from the same machine and have AWS Amplify Installed as well as NPM ad Yarn.
 
