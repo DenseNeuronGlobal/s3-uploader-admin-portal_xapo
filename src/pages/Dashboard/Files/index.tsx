@@ -110,6 +110,7 @@ const Files = () => {
     setSelectedRows([]);
     setLoading(true);
     try {
+      console.log(identityId);
       const contents = await Storage.list(searchValue, {
         pageSize: 'ALL',
         identityId
