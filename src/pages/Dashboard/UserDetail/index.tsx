@@ -36,10 +36,11 @@ const defaultPath: IPath = {
 const apiName: string = 'AdminQueries';
 
 const UserDetail: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [isUserDisabled, setIsUserDisabled] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [isUserDisabled, setIsUserDisabled] = useState<boolean>(false);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const history = useHistory();
   const {username} = useParams<{username: string}>();
   const {value: name, bind: bindName, setValue: setName} = useInput('');
@@ -65,10 +66,12 @@ const UserDetail: React.FC = () => {
     setLoading(true);
     try {
       const user: IUserResponse = await fetchUser(username);
-      setEmail(user.Username);
       setIsUserDisabled(!user.Enabled);
       if (user.UserAttributes) {
         setName(user.UserAttributes.find((attr: IAttribute) => attr.Name === 'name')?.Value || '');
+        const fetchedUserEmail = user.UserAttributes.find((attr: IAttribute) => attr.Name === 'email')?.Value || '';
+        setEmail(fetchedUserEmail);
+        setUserEmail(fetchedUserEmail);
       }
     } catch (error: any) {
       if (error) {
@@ -177,7 +180,7 @@ const UserDetail: React.FC = () => {
         paths={[
           defaultPath,
           {
-            title: isEdit ? username : "Add User"
+            title: isEdit ? userEmail : "Add User"
           }
         ]}
       />

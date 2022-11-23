@@ -86,10 +86,11 @@ const Files = () => {
         const user = data.Users[i];
         if (user.Username.startsWith(searchValue) && user.Attributes) {
           const identity: IAttribute = user.Attributes.find((attribute: IAttribute) => attribute.Name === "custom:identityId");
-          if (identity && identity.Value) {
+          const email: IAttribute = user.Attributes.find((attribute: IAttribute) => attribute.Name === "email");
+          if (identity && identity.Value && email.Value) {
             contents.push({
               id: identity.Value,
-              key: user.Username,
+              key: email.Value,
               lastModified: user.UserLastModifiedDate,
               size: 0,
             });

@@ -66,10 +66,10 @@ const Users = () => {
     },
     {
       title: 'Email',
-      key: 'Username',
+      key: 'email',
       render: (row: IRow) => (
         <UserNameCell onClick={() => onRowClick(row)}>
-          {row.Username}
+          {row.email}
         </UserNameCell>
       )
     },

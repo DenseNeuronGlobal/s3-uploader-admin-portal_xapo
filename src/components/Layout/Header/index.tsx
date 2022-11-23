@@ -84,7 +84,7 @@ const Header: FC<IHeaderProps> = ({ user }) => {
       </Logo>
       <UserInfo onClick={handleMenuClick}>
         <Avatar />
-        <UserInfoLabel>{user?.username}</UserInfoLabel>
+        <UserInfoLabel>{user?.email}</UserInfoLabel>
       </UserInfo>
       <Popover
         style={{
