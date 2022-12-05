@@ -1,6 +1,6 @@
 import React from 'react';
 import {BrowserRouter as Router, Switch, Route} from 'react-router-dom';
-import Amplify, {Storage} from 'aws-amplify';
+import Amplify, {Storage, Auth} from 'aws-amplify';
 import Dashboard from './pages/Dashboard';
 import {COGNITO} from './configs/aws';
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -19,6 +19,8 @@ Amplify.configure({
 });
 
 Storage.configure({ level: 'protected' });
+
+Auth.configure({ signUpVerificationMethod: 'link' });
 
 const App: React.FC = () => {
   return (

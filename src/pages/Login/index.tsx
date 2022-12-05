@@ -82,11 +82,15 @@ const Signin: FC = () => {
         // setIsChangePassword(true)
       };
       console.log("userDetail", userDetail)
-      if (userDetail.signInUserSession.accessToken.payload["cognito:groups"].includes("Admin")) {
+      if (userDetail.signInUserSession.accessToken && 
+        userDetail.signInUserSession.accessToken.payload["cognito:groups"] && 
+        userDetail.signInUserSession.accessToken.payload["cognito:groups"].length && 
+        userDetail.signInUserSession.accessToken.payload["cognito:groups"].includes("Admin")
+      ) {
         Toast('Success!!', 'Login Successfully', 'success');
         history.push('/');
       } else {
-        Toast('Error!!', "Unauthorized!", 'danger');
+        Toast('Error!!', "This portal is for members of the Administration group only", 'danger');
       }
     } catch (error: any) {
       Toast('Error!!', error.message, 'danger');

@@ -28,7 +28,7 @@ const Dashboard: React.FC = () => {
         <Route path="/files">
           <Files />
         </Route>
-        <Route path="*" render={() => <Redirect to="/users" />} />
+        <Route path="*" render={() => <Redirect to="/files" />} />
       </Switch>
     </Page>
   );

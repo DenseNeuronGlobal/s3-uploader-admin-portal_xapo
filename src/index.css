@@ -140,3 +140,7 @@ iframe {
 .amplify-image.logo {
   width: 65% !important;
 }
+
+.MuiInputBase-root.Mui-disabled {
+  background: rgba(0, 0, 0, 0.05);
+}
